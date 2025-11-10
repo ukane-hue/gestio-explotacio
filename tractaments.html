@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8">
+  <title>Gestió de Tractaments</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <script defer src="js/tractaments.js"></script>
+</head>
+<body>
+  <header>
+    <h1>Gestió de Tractaments i Fertilització</h1>
+    <nav>
+      <a href="index.html">Inici</a>
+      <a href="parceles.html">Parcel·les</a>
+      <a href="tractaments.html">Tractaments</a>
+      <a href="collites.html">Collites</a>
+    </nav>
+  </header>
+  <main>
+    <h2>Registrar tractament</h2>
+    <form id="formTractaments" action="php/guardar_tractament.php" method="POST">
+      <label for="data">Data:</label>
+      <input type="date" name="data" id="data" required>
+      <label for="producte">Producte:</label>
+      <input type="text" name="producte" id="producte" required>
+      <label for="quantitat">Quantitat (L o Kg):</label>
+      <input type="number" name="quantitat" id="quantitat" step="0.01" required>
+      <label for="parcel_id">Parcel·la (ID o nom):</label>
+      <input type="text" name="parcel_id" id="parcel_id">
+      <label for="observacions">Observacions:</label>
+      <textarea name="observacions" id="observacions" rows="3"></textarea>
+      <button type="submit">Desar tractament</button>
+      <p id="missatge"></p>
+    </form>
+  </main>
+  <footer><p>© 2025 Gestió Fruiteres DAW</p></footer>
+</body>
+</html>
