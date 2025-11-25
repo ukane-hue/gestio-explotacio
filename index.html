@@ -5,6 +5,17 @@
   <title>Gestió d'Explotació Fruiteres</title>
   <link rel="stylesheet" href="css/styles.css">
   <script defer src="js/main.js"></script>
+  <style>
+      /* Petit estil per al botó de sortir al menú */
+      .logout-btn {
+          background-color: #dc3545; /* Vermell */
+          padding: 5px 10px;
+          border-radius: 4px;
+      }
+      .logout-btn:hover {
+          background-color: #c82333;
+      }
+  </style>
 </head>
 <body>
   <header>
@@ -14,16 +25,21 @@
       <a href="parceles.html">Parcel·les</a>
       <a href="tractaments.html">Tractaments</a>
       <a href="collites.html">Collites</a>
+      <a href="personal.html">Personal</a>
+      <a href="php/logout.php" style="background-color: #dc3545; padding: 5px 10px; border-radius: 4px; color: white; text-decoration: none;">Tancar Sessió</a>
     </nav>
   </header>
+  
   <main>
-    <h2>Benvingut/da</h2>
+    <h2 id="titolBenvinguda">Benvingut/da</h2>
+    
     <p>Aquesta aplicació web permet gestionar de manera senzilla les parcel·les, tractaments i collites d'una explotació fruitera.</p>
     <ul>
       <li>📍 Registra i consulta les teves <b>parcel·les</b>.</li>
       <li>💧 Controla els <b>tractaments i fertilitzacions</b> aplicats.</li>
       <li>🍎 Porta el registre de les teves <b>collites</b> i produccions.</li>
     </ul>
+
   <section class="fruites">
       <h2>Arbres de fruita</h2>
       <div class="cards">
@@ -45,13 +61,33 @@
         <article class="card">
           <img src="img/poma-fuji.jpg" alt="Poma Fuji">
           <h3>Pomera</h3>
-          <p>Pom es cruixents i dolces, molt versàtils a la cuina.</p>
+          <p>Varietat cruixent i dolça, de llarga conservació.</p>
         </article>
       </div>
-    </section>
+  </section>
   </main>
+
   <footer>
-    <p>© 2025 Gestió Fruiteres DAW - Desenvolupament Web</p>
+    <p>&copy; 2025 Gestió Agrícola - Projecte DAW</p>
   </footer>
+
+  <script>
+    // Només carregar la pàgina, preguntem al servidor si estem loguejats
+    fetch('php/check_session.php')
+        .then(response => response.json())
+        .then(data => {
+            if (!data.ok) {
+                // Si no estem loguejats, ens fa fora cap al login
+                window.location.href = 'login.html';
+            } else {
+                // Si estem loguejats, posem el nom de l'usuari al títol
+                document.getElementById('titolBenvinguda').innerText = "Benvingut/da, " + data.nom;
+            }
+        })
+        .catch(error => {
+            console.error('Error comprovant sessió:', error);
+            window.location.href = 'login.html';
+        });
+  </script>
 </body>
 </html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8">
+  <title>Gestió de Personal</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <script defer src="js/personal.js"></script>
+</head>
+<body>
+  <header>
+    <h1>Gestió de Personal</h1>
+    <nav>
+      <a href="index.html">Inici</a>
+      <a href="parceles.html">Parcel·les</a>
+      <a href="tractaments.html">Tractaments</a>
+      <a href="collites.html">Collites</a>
+      <a href="personal.html">Personal</a>
+      <a href="php/logout.php" style="background-color: #dc3545; padding: 5px 10px; border-radius: 4px; color: white; text-decoration: none;">Tancar Sessió</a>
+    </nav>
+  </header>
+  <main>
+    <h2>Registrar nou treballador</h2>
+    <form id="formPersonal" action="php/guardar_personal.php" method="POST">
+      <fieldset>
+        <legend>Dades Personals</legend>
+        
+        <label for="nom">Nom i Cognoms:</label>
+        <input type="text" name="nom" id="nom" required>
+
+        <label for="nif">NIF/NIE:</label>
+        <input type="text" name="nif" id="nif" required>
+
+        <label for="nss">NSS (Núm. Seguretat Social):</label>
+        <input type="text" name="nss" id="nss">
+
+        <label for="telefon">Telèfon:</label>
+        <input type="tel" name="telefon" id="telefon">
+
+        <label for="email">Correu Electrònic:</label>
+        <input type="email" name="email" id="email">
+      </fieldset>
+
+      <fieldset>
+        <legend>Dades Laborals</legend>
+
+        <label for="carrec">Càrrec:</label>
+        <select name="carrec" id="carrec" required>
+            <option value="peo">Peó agrícola</option>
+            <option value="encarregat">Encarregat</option>
+            <option value="tractorista">Tractorista</option>
+            <option value="tecnic">Tècnic</option>
+            <option value="administratiu">Administratiu</option>
+        </select>
+
+        <label for="tipus_contracte">Tipus de Contracte:</label>
+        <select name="tipus_contracte" id="tipus_contracte" required>
+            <option value="temporal">Temporal</option>
+            <option value="indefinit">Indefinit</option>
+            <option value="fix_discontinu">Fix-Discontinu</option>
+            <option value="practiques">Pràctiques</option>
+            <option value="altres">Altres</option>
+        </select>
+
+        <label for="durada_contracte">Data Fi Contracte (Opcional si és indefinit):</label>
+        <input type="date" name="durada_contracte" id="durada_contracte">
+
+        <div style="margin-top: 15px; display: flex; align-items: center; gap: 10px;">
+            <input type="checkbox" name="carnet" id="carnet" style="width: auto;">
+            <label for="carnet" style="display: inline; margin: 0;">Té carnet fitosanitari?</label>
+        </div>
+      </fieldset>
+
+      <button type="submit">Guardar Treballador</button>
+    </form>
+  </main>
+</body>
+</html>
