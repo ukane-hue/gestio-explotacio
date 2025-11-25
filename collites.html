@@ -14,25 +14,37 @@
       <a href="parceles.html">Parcel·les</a>
       <a href="tractaments.html">Tractaments</a>
       <a href="collites.html">Collites</a>
+      <a href="personal.html">Personal</a>
+      <a href="php/logout.php" style="background-color: #dc3545; padding: 5px 10px; border-radius: 4px; color: white; text-decoration: none;">Tancar Sessió</a>
     </nav>
   </header>
   <main>
     <h2>Registrar una collita</h2>
-    <form id="formCollites" action="php/guardar_collita.php" method="POST">
+    <form id="formCollites">
       <label for="data">Data:</label>
       <input type="date" name="data" id="data" required>
+
+      <label for="parcel_id">Parcel·la:</label>
+      <select name="parcel_id" id="parcel_id" required>
+          <option value="">Carregant parcel·les...</option>
+      </select>
+
       <label for="varietat">Varietat:</label>
       <input type="text" name="varietat" id="varietat" required>
+
       <label for="quantitat">Quantitat (Kg):</label>
       <input type="number" name="quantitat" id="quantitat" step="0.01" required>
+
       <label for="equip">Equip de recol·lecció:</label>
-      <input type="text" name="equip" id="equip">
+      <input type="text" name="equip" id="equip" placeholder="Ex: Colla 1">
+
       <label for="observacions">Observacions:</label>
       <textarea name="observacions" id="observacions" rows="3"></textarea>
-      <button type="submit">Desar collita</button>
+
+      <button type="submit">Guardar Collita</button>
       <p id="missatge"></p>
+      
     </form>
   </main>
-  <footer><p>© 2025 Gestió Fruiteres DAW</p></footer>
 </body>
 </html>

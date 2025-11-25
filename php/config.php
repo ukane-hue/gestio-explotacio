@@ -1,7 +1,9 @@
 <?php
-// Configuració de la base de dades (canvia-ho segons el teu entorn)
+// php/config.php
+session_start(); // <--- AIXÒ ÉS EL MÉS IMPORTANT, INICIA LA SESSIÓ
+
 $DB_HOST = 'localhost';
-$DB_NAME = 'gestio_explotacio';
+$DB_NAME = 'gestio_explotacio1';
 $DB_USER = 'root';
 $DB_PASS = '';
 
@@ -20,19 +22,18 @@ function db() {
   return $pdo;
 }
 
-function get_json_input() {
-  $input = file_get_contents('php://input');
-  if ($input) {
-    $data = json_decode($input, true);
-    if (json_last_error() === JSON_ERROR_NONE) return $data;
-  }
-  // Fallback a $_POST
-  if (!empty($_POST)) return $_POST;
-  return [];
-}
-
 function json_out($ok, $extra = []) {
   header('Content-Type: application/json');
   echo json_encode(array_merge(['ok' => $ok], $extra));
   exit;
 }
+
+// Funció nova per protegir les pàgines
+function verificar_login() {
+    if (!isset($_SESSION['user_id'])) {
+        // Si no està loguejat, retornem error i parem
+        json_out(false, ['missatge' => 'No has iniciat sessió', 'redirect' => 'login.html']);
+    }
+    return $_SESSION['user_id'];
+}
+?>
