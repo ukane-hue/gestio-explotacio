@@ -1,11 +1,11 @@
--- ========================================
--- BASE DE DADES: Gestió Explotació Fruitera
--- Total taules: 16
--- Idioma: Català
--- ========================================
+
 CREATE DATABASE IF NOT EXISTS gestio_explotacio
-CHARACTER SET utf8mb4 COLLATE utf8mb4_catalan_ci;
+CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE gestio_explotacio;
+
+-- ========================================
+-- TAULES (CREATE TABLE)
+-- ========================================
 
 -- 1. usuaris
 CREATE TABLE usuaris (
@@ -56,7 +56,9 @@ CREATE TABLE parceles (
     infraestructures TEXT,
     documentacio TEXT,
     perimetre_geo JSON,
-    creat_el TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    id_propietari INT,
+    creat_el TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_propietari) REFERENCES usuaris(id_usuari) ON DELETE CASCADE
 );
 
 -- 5. sectors
@@ -112,18 +114,25 @@ CREATE TABLE productes (
 -- 9. tractaments
 CREATE TABLE tractaments (
     id_tractament INT AUTO_INCREMENT PRIMARY KEY,
-    id_producte INT NOT NULL,
     id_plantacio INT NOT NULL,
     data_aplicacio DATETIME NOT NULL,
-    quantitat_aplicada DECIMAL(10,3),
-    unitat ENUM('L', 'kg', 'g'),
     metode_aplicacio ENUM('fertirrigacio', 'foliar', 'sol', 'aeri', 'trampa'),
     id_operari INT,
     observacions TEXT,
     condicions_ambientals JSON,
-    FOREIGN KEY (id_producte) REFERENCES productes(id_producte) ON DELETE RESTRICT,
     FOREIGN KEY (id_plantacio) REFERENCES plantacions(id_plantacio) ON DELETE CASCADE,
     FOREIGN KEY (id_operari) REFERENCES usuaris(id_usuari) ON DELETE SET NULL
+);
+
+-- 9.1 tractaments_productes (Relació M:N)
+CREATE TABLE tractaments_productes (
+    id_tractament INT NOT NULL,
+    id_producte INT NOT NULL,
+    quantitat_aplicada DECIMAL(10,3),
+    unitat ENUM('L', 'kg', 'g'),
+    PRIMARY KEY (id_tractament, id_producte),
+    FOREIGN KEY (id_tractament) REFERENCES tractaments(id_tractament) ON DELETE CASCADE,
+    FOREIGN KEY (id_producte) REFERENCES productes(id_producte) ON DELETE RESTRICT
 );
 
 -- 10. collites
@@ -197,7 +206,7 @@ CREATE TABLE trampes_monitoratge (
     id_trampa INT AUTO_INCREMENT PRIMARY KEY,
     id_plantacio INT NOT NULL,
     tipus_plaga VARCHAR(100),
-    ubicacio_geo POINT, -- Requereix suport espacial
+    ubicacio_geo POINT NOT NULL, -- Requereix suport espacial
     data_instalacio DATE,
     data_ultima_revisio DATE,
     captures_ultima_revisio INT,
@@ -237,7 +246,88 @@ CREATE TABLE alertes (
     FOREIGN KEY (id_observacio) REFERENCES observacions_fitosanitaries(id_observacio) ON DELETE SET NULL
 );
 
--- Índexs per rendiment
+-- 17. treballadors
+CREATE TABLE treballadors (
+    id_treballador INT AUTO_INCREMENT PRIMARY KEY,
+    nom VARCHAR(100) NOT NULL,
+    cognom VARCHAR(100) NOT NULL,
+    dni VARCHAR(20) UNIQUE NOT NULL,
+    telefon VARCHAR(20),
+    email VARCHAR(100),
+    adreca TEXT,
+    tipus_contracte VARCHAR(50),
+    categoria VARCHAR(50),
+    num_carnet_aplicador VARCHAR(50),
+    data_inici DATE,
+    data_fi DATE
+);
+
+-- 18. certificacions
+CREATE TABLE certificacions (
+    id_certificacio INT AUTO_INCREMENT PRIMARY KEY,
+    id_treballador INT NOT NULL,
+    tipus VARCHAR(100) NOT NULL,
+    data_obtencio DATE,
+    data_caducitat DATE,
+    FOREIGN KEY (id_treballador) REFERENCES treballadors(id_treballador) ON DELETE CASCADE
+);
+
+-- 19. maquinaria (Equips)
+CREATE TABLE maquinaria (
+    id_maquina INT AUTO_INCREMENT PRIMARY KEY,
+    nom VARCHAR(100) NOT NULL,
+    tipus VARCHAR(50),
+    matricula VARCHAR(20),
+    data_compra DATE,
+    estat ENUM('actiu', 'inactiu', 'reparacio') DEFAULT 'actiu'
+);
+
+-- 20. tasques (Tipus de feina)
+CREATE TABLE tasques (
+    id_tasca INT AUTO_INCREMENT PRIMARY KEY,
+    nom_tasca VARCHAR(100) NOT NULL,
+    descripcio TEXT
+);
+
+-- 21. registre_treball (Fitxatges / Fa)
+CREATE TABLE registre_treball (
+    id_registre INT AUTO_INCREMENT PRIMARY KEY,
+    id_treballador INT NOT NULL,
+    id_tasca INT NOT NULL,
+    id_parcela INT, -- Opcional, per saber on s'ha fet
+    data DATE NOT NULL,
+    hora_inici TIME,
+    hora_fi TIME,
+    observacions TEXT,
+    FOREIGN KEY (id_treballador) REFERENCES treballadors(id_treballador) ON DELETE CASCADE,
+    FOREIGN KEY (id_tasca) REFERENCES tasques(id_tasca) ON DELETE RESTRICT,
+    FOREIGN KEY (id_parcela) REFERENCES parceles(id_parcela) ON DELETE SET NULL
+);
+
+-- 22. collites_treballadors (Relació M:N)
+CREATE TABLE collites_treballadors (
+    id_collita INT NOT NULL,
+    id_treballador INT NOT NULL,
+    hores DECIMAL(5,2),
+    PRIMARY KEY (id_collita, id_treballador),
+    FOREIGN KEY (id_collita) REFERENCES collites(id_collita) ON DELETE CASCADE,
+    FOREIGN KEY (id_treballador) REFERENCES treballadors(id_treballador) ON DELETE CASCADE
+);
+
+-- 23. tractaments_maquinaria (Relació M:N)
+CREATE TABLE tractaments_maquinaria (
+    id_tractament INT NOT NULL,
+    id_maquina INT NOT NULL,
+    hores_us DECIMAL(5,2),
+    PRIMARY KEY (id_tractament, id_maquina),
+    FOREIGN KEY (id_tractament) REFERENCES tractaments(id_tractament) ON DELETE CASCADE,
+    FOREIGN KEY (id_maquina) REFERENCES maquinaria(id_maquina) ON DELETE RESTRICT
+);
+
+-- ========================================
+-- ÍNDEXS I ALTRES
+-- ========================================
+
 CREATE INDEX idx_parcela_nom ON parceles(nom_parcela);
 CREATE INDEX idx_plantacio_data ON plantacions(data_plantacio);
 CREATE INDEX idx_collita_data ON collites(data_inici);
@@ -249,7 +339,7 @@ CREATE INDEX idx_alerta_nivell ON alertes(nivell);
 ALTER TABLE trampes_monitoratge ADD SPATIAL INDEX(ubicacio_geo);
 
 -- ========================================
--- VISTES ÚTILES
+-- VISTES (VIEWS)
 -- ========================================
 
 -- Rendiment per hectàrea i any

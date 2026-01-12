@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Test Tabs</title>
+    <style>
+        .tab-content {
+            display: none;
+            padding: 20px;
+            border: 1px solid #ccc;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .tab {
+            cursor: pointer;
+            padding: 10px;
+            background: #eee;
+            display: inline-block;
+        }
+
+        .tab.active {
+            background: #10B981;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="tabs">
+        <div class="tab active" data-target="personal">Personal</div>
+        <div class="tab" data-target="certificacions">Certificacions</div>
+    </div>
+
+    <div id="personal" class="tab-content active">
+        <h1>Personal Content</h1>
+    </div>
+
+    <div id="certificacions" class="tab-content">
+        <h1>Certificacions Content</h1>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabs = document.querySelectorAll('.tab');
+            const contents = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    contents.forEach(c => c.classList.remove('active'));
+
+                    tab.classList.add('active');
+                    const targetId = tab.dataset.target;
+                    const target = document.getElementById(targetId);
+                    if (target) {
+                        target.classList.add('active');
+                        console.log('Activated:', targetId);
+                    } else {
+                        console.error('Target not found:', targetId);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

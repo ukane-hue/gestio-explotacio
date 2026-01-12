@@ -1,82 +1,105 @@
-document.addEventListener('DOMContentLoaded', function () {
-  const form = document.getElementById('formParceles');
-  const txtCoords = document.getElementById('coordenades');
-  const msg = document.getElementById('missatge');
+document.addEventListener('DOMContentLoaded', () => {
+  initMap();
 
-  // --- MAPA (Leaflet) ---
-  const map = L.map('map');
-  map.setView([40.4, -3.7], 6);
+  const form = document.getElementById('formParceles');
+  if (form) {
+    form.addEventListener('submit', guardarParcela);
+  }
+});
+
+let map;
+let drawnItems;
+
+function initMap() {
+  map = L.map('map').setView([41.6176, 0.6200], 13);
+
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '&copy; OpenStreetMap contributors'
+    attribution: '© OpenStreetMap contributors'
   }).addTo(map);
-  const drawnItems = new L.FeatureGroup();
+
+  drawnItems = new L.FeatureGroup();
   map.addLayer(drawnItems);
+
   const drawControl = new L.Control.Draw({
-    draw: { polygon: { allowIntersection: false, showArea: true }, marker:false, circle:false, rectangle:false, polyline:false, circlemarker:false },
-    edit: { featureGroup: drawnItems, remove: true }
+    draw: {
+      polygon: true,
+      marker: false,
+      circle: false,
+      circlemarker: false,
+      polyline: false,
+      rectangle: true
+    },
+    edit: {
+      featureGroup: drawnItems
+    }
   });
   map.addControl(drawControl);
 
-  function saveGeoJSONToTextarea() {
-    const fc = drawnItems.toGeoJSON();
-    if (fc.features.length > 0) {
-      const single = { type: 'FeatureCollection', features: [fc.features[0]] };
-      txtCoords.value = JSON.stringify(single);
-    } else { txtCoords.value = ''; }
-  }
-  function ensureSinglePolygon(newLayer) {
-    drawnItems.clearLayers();
-    if (newLayer) drawnItems.addLayer(newLayer);
-    saveGeoJSONToTextarea();
-  }
-  map.on(L.Draw.Event.CREATED, e => ensureSinglePolygon(e.layer));
-  map.on(L.Draw.Event.EDITED, saveGeoJSONToTextarea);
-  map.on(L.Draw.Event.DELETED, saveGeoJSONToTextarea);
-
-  // Load existing GeoJSON if present
-  try {
-    if (txtCoords.value && txtCoords.value.trim()) {
-      const gj = JSON.parse(txtCoords.value);
-      const layer = L.geoJSON(gj);
-      layer.eachLayer(l => drawnItems.addLayer(l));
-      if (drawnItems.getLayers().length) map.fitBounds(drawnItems.getBounds(), { padding: [20,20] });
-    }
-  } catch (e) { console.warn('GeoJSON invàlid', e); }
-
-  // --- Enviament al servidor ---
-  form.addEventListener('submit', async function (e) {
-    e.preventDefault();
-    msg.textContent = '';
-    const nom = document.getElementById('nom').value.trim();
-    const superficie = parseFloat(document.getElementById('superficie').value);
-    const cultiu = document.getElementById('cultiu').value;
-    const varietat = document.getElementById('varietat').value.trim();
-    const geojson = txtCoords.value;
-
-    if (!geojson) {
-      msg.textContent = '⚠️ Afegeix el polígon de la parcel·la al mapa.';
-      msg.style.color = '#b33'; return;
-    }
-
-    try {
-      const res = await fetch('php/save_parcela.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nom, superficie, cultiu, varietat, geojson })
-      });
-      const data = await res.json();
-      if (data.ok) {
-        msg.textContent = '✅ Parcel·la desada correctament!';
-        msg.style.color = '#3a833a';
-        // form.reset(); // opcional
-      } else {
-        throw new Error(data.error || 'Error desconegut');
-      }
-    } catch (err) {
-      console.error(err);
-      msg.textContent = '❌ Error desant la parcel·la.';
-      msg.style.color = '#b33';
-    }
+  map.on(L.Draw.Event.CREATED, function (e) {
+    const layer = e.layer;
+    drawnItems.clearLayers(); // Només una parcel·la
+    drawnItems.addLayer(layer);
+    actualitzarDadesGeo(layer);
   });
-});
+
+  map.on(L.Draw.Event.EDITED, function (e) {
+    const layers = e.layers;
+    layers.eachLayer(function (layer) {
+      actualitzarDadesGeo(layer);
+    });
+  });
+}
+
+function actualitzarDadesGeo(layer) {
+  // Si tenim GeometryUtil
+  if (L.GeometryUtil && L.GeometryUtil.geodesicArea) {
+    const area = L.GeometryUtil.geodesicArea(layer.getLatLngs()[0]);
+    document.getElementById('superficie').value = (area / 10000).toFixed(2);
+    document.getElementById('areaInfo').innerHTML = `<strong>Àrea calculada:</strong> ${(area / 10000).toFixed(2)} ha`;
+  }
+
+  const geojson = layer.toGeoJSON();
+  document.getElementById('coordenades').value = JSON.stringify(geojson);
+}
+
+async function guardarParcela(e) {
+  e.preventDefault();
+  const msg = document.getElementById('missatge');
+  msg.textContent = "Guardant...";
+  msg.style.color = "blue";
+
+  const formData = new FormData(e.target);
+  const data = Object.fromEntries(formData.entries());
+
+  if (!data.coordenades) {
+    msg.textContent = "Has de dibuixar la parcel·la al mapa!";
+    msg.style.color = "red";
+    return;
+  }
+
+  data.geojson = JSON.parse(data.coordenades);
+
+  try {
+    const res = await fetch('php/save_parcela.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    const json = await res.json();
+
+    if (json.ok) {
+      msg.textContent = "Parcel·la guardada correctament!";
+      msg.style.color = "green";
+      e.target.reset();
+      drawnItems.clearLayers();
+      document.getElementById('areaInfo').innerHTML = `<strong>Àrea calculada:</strong> –`;
+    } else {
+      msg.textContent = "Error: " + json.error;
+      msg.style.color = "red";
+    }
+  } catch (err) {
+    console.error(err);
+    msg.textContent = "Error de connexió.";
+    msg.style.color = "red";
+  }
+}
