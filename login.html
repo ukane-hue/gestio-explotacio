@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Gestió Explotació</title>
+    <link rel="stylesheet" href="css/styles.css?v=3">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #2c3e50, #4ca1af);
+        }
+
+        .login-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .login-container h1 {
+            color: #2c3e50;
+            margin-bottom: 1.5rem;
+        }
+
+        .login-container input {
+            margin-bottom: 1rem;
+        }
+
+        .login-container button {
+            width: 100%;
+            padding: 12px;
+            font-size: 1.1rem;
+        }
+
+        #errorMsg {
+            color: #e74c3c;
+            margin-top: 1rem;
+            font-weight: bold;
+        }
+    </style>
+    <script defer src="js/login.js"></script>
+</head>
+
+<body>
+    <div class="login-container">
+        <h1>Gestió Explotació</h1>
+        <form id="loginForm">
+            <input type="email" name="email" placeholder="Correu electrònic" required autofocus>
+            <input type="password" name="password" placeholder="Contrasenya" required>
+            <button type="submit">Iniciar Sessió</button>
+        </form>
+        <p id="errorMsg"></p>
+    </div>
+</body>
+
+</html>

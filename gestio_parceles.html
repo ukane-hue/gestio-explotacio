@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Gestió de Parcel·les</title>
+
+    <!-- Estils propis -->
+    <link rel="stylesheet" href="css/styles.css?v=3">
+    <script src="js/auth_guard.js"></script>
+    <!-- Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+    <script src="https://unpkg.com/leaflet-geometryutil@0.9.3/src/leaflet.geometryutil.js"></script>
+
+    <script defer src="js/gestio_parceles.js"></script>
+</head>
+
+<body>
+    <header>
+        <h1>
+            <img src="img/logo.png" alt="Logo" class="logo">
+            Gestió de Parcel·les
+        </h1>
+        <nav>
+            <a href="index.html">Inici</a>
+            <a href="parceles.html">Nova Parcel·la</a>
+            <a href="gestio_parceles.html" class="active">Gestió Parcel·les</a>
+            <a href="tractaments.html">Tractaments</a>
+            <a href="collites.html">Collites</a>
+            <a href="maquinaria.html">Maquinària</a>
+            <a href="personal.html">Personal</a>
+            <a href="observacions.html">Observacions</a>
+            <a href="php/logout.php">Tancar Sessió</a>
+        </nav>
+    </header>
+
+    <main class="container">
+        <div class="card">
+            <h2>Selecciona una Parcel·la per Editar</h2>
+            <select id="selectorParcela" style="width: 100%; padding: 10px; font-size: 1.1em; margin-bottom: 20px;">
+                <option value="">-- Carregant parcel·les... --</option>
+            </select>
+        </div>
+
+        <div id="editorContainer" style="display:none; margin-top: 20px;">
+            <form id="formEdicio">
+                <input type="hidden" name="id_parcela" id="id_parcela">
+
+                <label for="nom">Nom de la parcel·la:</label>
+                <input type="text" name="nom" id="nom" required>
+
+                <label for="superficie">Superfície declarada (ha):</label>
+                <input type="number" name="superficie" id="superficie" step="0.01" min="0" required>
+
+                <label for="cultiu">Cultiu principal:</label>
+                <select name="cultiu" id="cultiu" required>
+                    <option value="">-- Selecciona --</option>
+                    <option value="cirerer">Cirerer</option>
+                    <option value="presseguer">Presseguer</option>
+                    <option value="perera">Perera</option>
+                    <option value="pomera">Pomera</option>
+                </select>
+
+                <label for="varietat">Varietat:</label>
+                <input type="text" name="varietat" id="varietat">
+
+                <label for="coordenades">Coordenades o descripció:</label>
+
+                <div class="map-block">
+                    <label>Modifica el polígon al mapa si cal:</label>
+                    <div id="map"></div>
+                    <small>Usa les eines per editar o eliminar el polígon existent.</small>
+
+                    <p id="areaInfo"><strong>Àrea calculada:</strong> –</p>
+                </div>
+
+                <textarea name="coordenades" id="coordenades" rows="3"></textarea>
+
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="submit" id="btnGuardar">Guardar Canvis</button>
+                    <button type="button" id="btnEliminar" style="background-color: #e74c3c;">Eliminar
+                        Parcel·la</button>
+                </div>
+                <p id="missatge"></p>
+            </form>
+        </div>
+    </main>
+
+    <footer>
+        <p>© 2025 Gestió Fruiteres DAW</p>
+    </footer>
+</body>
+
+</html>
