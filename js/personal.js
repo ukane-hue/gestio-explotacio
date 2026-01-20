@@ -102,6 +102,11 @@ async function handleForm(e, url, msgId, callback) {
   }
 }
 
+// Add call to carregarRegistres
+document.addEventListener('DOMContentLoaded', () => {
+  carregarRegistres();
+});
+
 async function carregarTreballadors() {
   try {
     const res = await fetch('php/get_treballadors.php');
@@ -122,7 +127,16 @@ async function carregarTreballadors() {
       json.treballadors.forEach(t => {
         // Taula
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${t.nom} ${t.cognom}</td><td>${t.dni}</td><td>${t.categoria || '-'}</td><td>${t.telefon || '-'}</td><td>${t.num_carnet_aplicador || '-'}</td>`;
+        tr.innerHTML = `
+            <td>${t.nom} ${t.cognom}</td>
+            <td>${t.dni}</td>
+            <td>${t.categoria || '-'}</td>
+            <td>${t.telefon || '-'}</td>
+            <td>${t.num_carnet_aplicador || '-'}</td>
+            <td>
+                 <button onclick="eliminarTreballador(${t.id_treballador})" style="background:#ef4444; padding:2px 5px; font-size:0.8rem;">Eliminar</button>
+            </td>
+        `;
         tbody.appendChild(tr);
 
         // Select Registre
@@ -145,6 +159,63 @@ async function carregarTreballadors() {
   } catch (err) { console.error(err); }
 }
 
+window.eliminarTreballador = async function (id) {
+  if (!confirm("Eliminar treballador?")) return;
+  try {
+    const res = await fetch('php/delete_treballador.php', {
+      method: 'POST', body: JSON.stringify({ id }), headers: { 'Content-Type': 'application/json' }
+    });
+    if ((await res.json()).ok) carregarTreballadors();
+  } catch (e) { }
+};
+
+async function carregarRegistres() {
+  try {
+    const res = await fetch('php/get_registres_treball.php');
+    const json = await res.json();
+    const tbody = document.querySelector('#taulaRegistre tbody');
+    if (tbody && json.ok) {
+      tbody.innerHTML = '';
+      json.data.forEach(r => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+                    <td>${r.data}</td>
+                    <td>${r.nom} ${r.cognom}</td>
+                    <td>${r.nom_tasca}</td>
+                    <td>${r.nom_parcela || '-'}</td>
+                    <td>${r.hora_inici || '-'}</td>
+                    <td>${r.hora_fi || '-'}</td>
+                    <td>
+                        <button onclick="eliminarRegistre(${r.id_registre})" style="background:#ef4444; padding:2px 5px; font-size:0.8rem;">Eliminar</button>
+                    </td>
+                `;
+        tbody.appendChild(tr);
+      });
+    }
+  } catch (e) { }
+}
+
+window.eliminarRegistre = async function (id) {
+  if (!confirm("Eliminar registre?")) return;
+  try {
+    const res = await fetch('php/delete_registre_treball.php', {
+      method: 'POST', body: JSON.stringify({ id }), headers: { 'Content-Type': 'application/json' }
+    });
+    if ((await res.json()).ok) carregarRegistres();
+  } catch (e) { }
+};
+
+// Update handleForm to call reload based on msgId context, but simplistic approach:
+const originalHandle = handleForm;
+handleForm = async function (e, url, msgId, callback) {
+  await originalHandle(e, url, msgId, callback);
+  // If successful (green text or check msg content), reload specific tables
+  const msg = document.getElementById(msgId);
+  if (msg.style.color === 'green') {
+    if (msgId === 'msgRegistre') carregarRegistres();
+  }
+};
+
 async function carregarTasques() {
   try {
     const res = await fetch('php/get_tasques.php');
@@ -157,7 +228,31 @@ async function carregarTasques() {
 
       json.tasques.forEach(t => {
         const li = document.createElement('li');
-        li.textContent = t.nom_tasca;
+        li.style.cursor = 'pointer';
+
+        // Contenidor del títol i data
+        const titleDiv = document.createElement('div');
+        const dataText = t.data_prevista ? ` (${new Date(t.data_prevista).toLocaleDateString()})` : '';
+        titleDiv.textContent = t.nom_tasca + dataText;
+        titleDiv.style.fontWeight = 'bold';
+
+        // Contenidor de la descripció (ocult per defecte)
+        const descDiv = document.createElement('div');
+        descDiv.textContent = t.descripcio || "Sense descripció.";
+        descDiv.style.display = 'none';
+        descDiv.style.marginTop = '5px';
+        descDiv.style.fontSize = '0.9em';
+        descDiv.style.color = '#555';
+
+        li.appendChild(titleDiv);
+        li.appendChild(descDiv);
+
+        // Click per alternar visibilitat
+        li.addEventListener('click', () => {
+          const isHidden = descDiv.style.display === 'none';
+          descDiv.style.display = isHidden ? 'block' : 'none';
+        });
+
         ul.appendChild(li);
 
         const opt = document.createElement('option');

@@ -286,7 +286,8 @@ CREATE TABLE maquinaria (
 CREATE TABLE tasques (
     id_tasca INT AUTO_INCREMENT PRIMARY KEY,
     nom_tasca VARCHAR(100) NOT NULL,
-    descripcio TEXT
+    descripcio TEXT,
+    data_prevista DATE
 );
 
 -- 21. registre_treball (Fitxatges / Fa)

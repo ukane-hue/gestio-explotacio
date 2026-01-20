@@ -4,12 +4,32 @@
 <head>
   <meta charset="UTF-8">
   <title>Gestió de Personal</title>
-  <link rel="stylesheet" href="css/styles.css?v=3">
+  <link rel="stylesheet" href="css/styles.css?v=4">
   <script src="js/auth_guard.js"></script>
-  <script defer src="js/personal.js?v=3"></script>
+  <script defer src="js/personal.js?v=4"></script>
 </head>
 
 <body>
+  <header>
+    <h1>
+      <img src="img/logo.png" alt="Logo" class="logo">
+      Gestió Agrícola
+    </h1>
+    <nav>
+      <a href="index.html">Inici</a>
+      <a href="parceles.html">Nova Parcel·la</a>
+      <a href="gestio_parceles.html">Gestió Parcel·les</a>
+      <a href="tractaments.html">Tractaments</a>
+      <a href="collites.html">Collites</a>
+      <a href="maquinaria.html">Maquinària</a>
+      <a href="personal.html" class="active">Personal</a>
+      
+      <a href="Inventari.html">Inventari</a>
+      <a href="observacions.html">Observacions</a>
+      <a href="php/logout.php">Tancar Sessió</a>
+    </nav>
+  </header>
+
   <main class="container">
     <div class="tabs">
       <div class="tab active" data-target="personal">Personal</div>
@@ -117,6 +137,7 @@
               <th>Categoria</th>
               <th>Telèfon</th>
               <th>Carnet</th>
+              <th>Accions</th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -131,13 +152,12 @@
         <form id="formTasca">
           <label>Nom de la Tasca:</label>
           <input type="text" name="nom" required placeholder="Ex: Podar, Collir...">
+          <label>Data Prevista:</label>
+          <input type="date" name="data_prevista" required>
           <label>Descripció:</label>
           <textarea name="descripcio"></textarea>
           <button type="submit">Crear Tasca</button>
-          <a href="index.html">Inici</a>
-          <a href="parceles.html">Nova Parcel·la</a>
-          <a href="gestio_parceles.html">Gestió Parcel·les</a>
-          <a href="tractaments.html">Tractaments</a>
+
           <p id="msgTasca"></p>
         </form>
       </div>
@@ -145,6 +165,8 @@
         <h3>Catàleg de Tasques</h3>
         <ul id="llistaTasques"></ul>
       </div>
+
+
     </div>
 
     <!-- PESTANYA 3: REGISTRE DIARI -->
@@ -185,6 +207,24 @@
           <button type="submit">Registrar Feina</button>
           <p id="msgRegistre"></p>
         </form>
+      </div>
+
+      <div class="card" style="margin-top: 20px;">
+        <h3>Històric de Feines</h3>
+        <table id="taulaRegistre" class="styled-table" style="width:100%">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Treballador</th>
+              <th>Tasca</th>
+              <th>Parcel·la</th>
+              <th>H. Inici</th>
+              <th>H. Fi</th>
+              <th>Accions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
       </div>
     </div>
   </main>

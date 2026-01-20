@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Gestió de Tractaments</title>
-  <link rel="stylesheet" href="css/styles.css?v=3">
+  <link rel="stylesheet" href="css/styles.css?v=4">
   <script src="js/auth_guard.js"></script>
   <script defer src="js/tractaments.js"></script>
 </head>
@@ -20,6 +20,8 @@
       <a href="collites.html">Collites</a>
       <a href="personal.html">Personal</a>
       <a href="maquinaria.html">Maquinària</a>
+      
+      <a href="inventari.html">Inventari</a>
       <a href="observacions.html">Observacions</a>
       <a href="php/logout.php" style="color: #ff9999;">Tancar Sessió</a>
     </nav>
@@ -79,6 +81,22 @@
       <button type="submit">Desar Tractament</button>
       <p id="missatge"></p>
     </form>
+
+    <hr class="divider" style="margin: 30px 0;">
+
+    <h3>Històric de Tractaments</h3>
+    <table id="taulaTractaments" class="styled-table">
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Parcel·la</th>
+          <th>Mètode</th>
+          <th>Observacions</th>
+          <th>Accions</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
   </main>
   <footer>
     <p>© 2025 Gestió Fruiteres DAW</p>

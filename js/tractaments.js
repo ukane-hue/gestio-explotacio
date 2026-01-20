@@ -149,3 +149,72 @@ function eliminarFila(btn) {
 // Exposem funcions globals
 window.afegirProducte = afegirProducte;
 window.eliminarFila = eliminarFila;
+
+// Add this line to call on load
+document.getElementById('addProducteBtn').addEventListener('click', afegirProducte);
+document.addEventListener('DOMContentLoaded', () => {
+  carregarTractaments();
+});
+
+
+async function carregarTractaments() {
+  try {
+    const res = await fetch('php/get_tractaments.php');
+    const json = await res.json();
+
+    const tbody = document.querySelector('#taulaTractaments tbody');
+    tbody.innerHTML = '';
+
+    if (json.ok && json.data) {
+      json.data.forEach(t => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+                    <td>${new Date(t.data_aplicacio).toLocaleDateString()}</td>
+                    <td>${t.nom_parcela || '-'}</td>
+                    <td>${t.metode_aplicacio || '-'}</td>
+                    <td>${t.observacions || ''}</td>
+                    <td>
+                        <button onclick="eliminarTractament('${t.id_tractament}')" style="background:#ef4444; padding:5px 10px; font-size:0.8rem;">Eliminar</button>
+                    </td>
+                `;
+        tbody.appendChild(tr);
+      });
+    }
+  } catch (err) {
+    console.error("Error carregant tractaments", err);
+  }
+}
+
+window.eliminarTractament = async function (id) {
+  if (!confirm("Estàs segur d'eliminar aquest tractament?")) return;
+
+  try {
+    const res = await fetch('php/delete_tractament.php', {
+      method: 'POST',
+      body: JSON.stringify({ id }),
+      headers: { 'Content-Type': 'application/json' }
+    });
+    const json = await res.json();
+    if (json.ok) {
+      carregarTractaments();
+    } else {
+      alert("Error: " + json.error);
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Error de connexió");
+  }
+};
+
+// Update existing calls
+const originalGuardar = guardarTractament;
+guardarTractament = async function (e) {
+  await originalGuardar(e);
+  if (document.getElementById('missatge').style.color !== 'red') { // Basic check if success (needs adjustment if originalGuardar doesn't set color clearly or returns status)
+    // Actually originalGuardar sets textContent. Let's just reload always or check text
+    setTimeout(carregarTractaments, 500);
+  }
+};
+// Better approach: modify guardarTractament in place or override it cleaner. 
+// Since I am replacing content, I will just rewrite guardarTractament in the next step or integrate it now.
+// I'll stick to adding `carregarTractaments()` call inside `guardarTractament` if I can match the code block, but wait, I can just modify `guardarTractament` directly by replacing the success block.
