@@ -3,8 +3,9 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+
 $DB_HOST = 'localhost';
-$DB_NAME = 'gestio_explotacio';
+$DB_NAME = 'gestio_explotacio1';
 $DB_USER = 'root';
 $DB_PASS = '';
 
@@ -123,4 +124,12 @@ function json_out($ok, $extra = []) {
   exit;
 }
 
-
+// Funció nova per protegir les pàgines
+function verificar_login() {
+    if (!isset($_SESSION['user_id'])) {
+        // Si no està loguejat, retornem error i parem
+        json_out(false, ['missatge' => 'No has iniciat sessió', 'redirect' => 'login.html']);
+    }
+    return $_SESSION['user_id'];
+}
+?>
