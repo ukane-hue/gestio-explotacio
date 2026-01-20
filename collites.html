@@ -1,50 +1,273 @@
 <!DOCTYPE html>
 <html lang="ca">
+
 <head>
   <meta charset="UTF-8">
-  <title>Gestió de Collites</title>
-  <link rel="stylesheet" href="css/styles.css">
+  <title>Gestió de Collites i Producció</title>
+  <link rel="stylesheet" href="css/styles.css?v=4">
+  <style>
+    /* Estils bàsics per a pestanyes */
+    .tabs {
+      display: flex;
+      border-bottom: 2px solid #ccc;
+      margin-bottom: 20px;
+    }
+
+    .tab {
+      padding: 10px 20px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      border-bottom: none;
+    }
+
+    .tab.active {
+      background-color: #f0f0f0;
+      border-color: #ccc;
+      font-weight: bold;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      border: 1px solid #ddd;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+  </style>
+  <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Opcional per gràfics -->
   <script defer src="js/collites.js"></script>
 </head>
+
 <body>
   <header>
-    <h1>Gestió de Collites</h1>
+    <h1>Gestió de Collites i Producció</h1>
     <nav>
       <a href="index.html">Inici</a>
-      <a href="parceles.html">Parcel·les</a>
+      <a href="parceles.html">Nova Parcel·la</a>
+      <a href="gestio_parceles.html">Gestió Parcel·les</a>
       <a href="tractaments.html">Tractaments</a>
-      <a href="collites.html">Collites</a>
+      <a href="collites.html" class="active">Collites</a>
       <a href="personal.html">Personal</a>
-      <a href="php/logout.php" style="background-color: #dc3545; padding: 5px 10px; border-radius: 4px; color: white; text-decoration: none;">Tancar Sessió</a>
+      <a href="maquinaria.html">Maquinària</a>
+      <a href="inventari.html">Inventari</a>
+      <a href="observacions.html">Observacions</a>
+      <a href="php/logout.php" style="color: #ff9999;">Tancar Sessió</a>
     </nav>
   </header>
-  <main>
-    <h2>Registrar una collita</h2>
-    <form id="formCollites">
-      <label for="data">Data:</label>
-      <input type="date" name="data" id="data" required>
+  <main class="container">
 
-      <label for="parcel_id">Parcel·la:</label>
-      <select name="parcel_id" id="parcel_id" required>
-          <option value="">Carregant parcel·les...</option>
-      </select>
+    <div class="tabs">
+      <div class="tab active" data-target="registre">Registrar Collita</div>
+      <div class="tab" data-target="qualitat">Control de Qualitat</div>
+      <div class="tab" data-target="tracabilitat">Traçabilitat</div>
+      <div class="tab" data-target="informes">Informes i Anàlisi</div>
+    </div>
 
-      <label for="varietat">Varietat:</label>
-      <input type="text" name="varietat" id="varietat" required>
+    <!-- PESTANYA 1: REGISTRE -->
+    <div id="registre" class="tab-content active">
+      <!-- ... (contingut existent) ... -->
 
-      <label for="quantitat">Quantitat (Kg):</label>
-      <input type="number" name="quantitat" id="quantitat" step="0.01" required>
+      <h2>Nova Collita</h2>
+      <form id="formCollites">
+        <label for="plantacio_id">Plantació (Parcel·la - Varietat):</label>
+        <select name="plantacio_id" id="plantacio_id" required>
+          <option value="">Carregant plantacions...</option>
+        </select>
 
-      <label for="equip">Equip de recol·lecció:</label>
-      <input type="text" name="equip" id="equip" placeholder="Ex: Colla 1">
+        <div class="row">
+          <div>
+            <label for="data_inici">Data Inici:</label>
+            <input type="date" name="data_inici" id="data_inici" required>
+          </div>
+          <div>
+            <label for="data_fi">Data Fi (Opcional):</label>
+            <input type="date" name="data_fi" id="data_fi">
+          </div>
+        </div>
 
-      <label for="observacions">Observacions:</label>
-      <textarea name="observacions" id="observacions" rows="3"></textarea>
+        <!-- Varietat es dedueix de la plantació, però guardem l'ID internament o el mostrem -->
+        <input type="hidden" id="id_varietat_hidden" name="id_varietat">
 
-      <button type="submit">Guardar Collita</button>
-      <p id="missatge"></p>
-      
-    </form>
+        <div class="row">
+          <div>
+            <label for="quantitat">Quantitat:</label>
+            <input type="number" name="quantitat" id="quantitat" step="0.01" required>
+          </div>
+          <div>
+            <label for="unitat">Unitat:</label>
+            <select name="unitat" id="unitat">
+              <option value="kg">Kg</option>
+              <option value="caixes">Caixes</option>
+              <option value="bins">Bins</option>
+            </select>
+          </div>
+        </div>
+
+        <label>Equip de recol·lecció:</label>
+        <div id="llistaTreballadors"
+          style="max-height: 150px; overflow-y: auto; border: 1px solid #ccc; padding: 10px;">
+          <!-- Checkboxes generats per JS -->
+          Carregant treballadors...
+        </div>
+
+        <label for="estat_fenologic">Estat Fenològic:</label>
+        <input type="text" name="estat_fenologic" id="estat_fenologic" placeholder="Ex: Maduresa òptima">
+
+        <label for="observacions">Incidències / Observacions:</label>
+        <textarea name="observacions" id="observacions" rows="3"></textarea>
+
+        <button type="submit">Guardar Collita</button>
+        <p id="missatgeCollita"></p>
+      </form>
+
+      <hr class="divider">
+
+      <h3>Últimes Collites Registrades</h3>
+      <div class="table-responsive">
+        <table id="taulaRecents" class="styled-table">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Parcel·la</th>
+              <th>Varietat</th>
+              <th>Quantitat</th>
+              <th>Lot</th>
+              <th>Accions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td colspan="5">Carregant...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PESTANYA 2: QUALITAT -->
+    <div id="qualitat" class="tab-content">
+      <h2>Control de Qualitat</h2>
+      <form id="formQualitat">
+        <label for="collita_id_qualitat">Selecciona Collita (Lot):</label>
+        <select name="collita_id" id="collita_id_qualitat" required>
+          <option value="">Carregant collites recents...</option>
+          <!-- S'omplirà amb JS -->
+        </select>
+
+        <label for="data_control">Data Control:</label>
+        <input type="date" name="data_control" id="data_control" required>
+
+        <div class="row">
+          <div>
+            <label for="calibre">Calibre Mitjà (mm):</label>
+            <input type="number" name="calibre" id="calibre" step="0.1">
+          </div>
+          <div>
+            <label for="fermesa">Fermesa (kg/cm²):</label>
+            <input type="number" name="fermesa" id="fermesa" step="0.1">
+          </div>
+        </div>
+
+        <label for="color">Color:</label>
+        <input type="text" name="color" id="color" placeholder="Ex: Vermell intens 80%">
+
+        <label for="defectes">Defectes Visibles:</label>
+        <textarea name="defectes" id="defectes" rows="2"></textarea>
+
+        <label for="percentatge">Percentatge Comercialitzable (%):</label>
+        <input type="number" name="percentatge" id="percentatge" step="0.1" max="100">
+
+        <button type="submit">Guardar Control</button>
+        <p id="missatgeQualitat"></p>
+      </form>
+
+      <hr class="divider" style="margin: 30px 0;">
+      <h3>Històric Controls Qualitat</h3>
+      <table id="taulaQualitat" class="styled-table">
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Parcel·la</th>
+            <th>Calibre</th>
+            <th>% Com.</th>
+            <th>Accions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <!-- PESTANYA 3: TRAÇABILITAT -->
+    <div id="tracabilitat" class="tab-content">
+      <h2>Traçabilitat del Producte</h2>
+      <div class="search-box" style="margin-bottom: 20px;">
+        <input type="text" id="cercaLot" placeholder="Introdueix ID de Lot (ex: L-2025-1-...)">
+        <button onclick="cercarTracabilitat()">Cercar</button>
+      </div>
+
+      <div id="resultatTracabilitat" style="display:none;">
+        <div class="card">
+          <h3>Fitxa del Lot: <span id="lotTitle"></span></h3>
+          <div class="row">
+            <div>
+              <h4>Origen</h4>
+              <p><strong>Parcel·la:</strong> <span id="traceParcela"></span></p>
+              <p><strong>Varietat:</strong> <span id="traceVarietat"></span></p>
+              <p><strong>Data Plantació:</strong> <span id="traceDataPlantacio"></span></p>
+            </div>
+            <div>
+              <h4>Collita</h4>
+              <p><strong>Data:</strong> <span id="traceDataCollita"></span></p>
+              <p><strong>Quantitat:</strong> <span id="traceQuantitat"></span></p>
+            </div>
+          </div>
+
+          <hr class="divider">
+
+          <h4>Qualitat</h4>
+          <p id="traceQualitatInfo">Sense dades de qualitat.</p>
+
+          <hr class="divider">
+
+          <h4>Historial de Tractaments (6 mesos previs)</h4>
+          <ul id="traceTractamentsList"></ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- PESTANYA 4: INFORMES -->
+    <div id="informes" class="tab-content">
+      <h2>Quadre de Comandament</h2>
+      <button onclick="carregarInformes()">Actualitzar Dades</button>
+
+      <div class="dashboard-grid">
+        <div class="card">
+          <h3>Producció per Varietat</h3>
+          <canvas id="chartVarietat"></canvas> <!-- Si no hi ha Chart.js, es mostrarà taula -->
+          <div id="taulaVarietat"></div>
+        </div>
+        <div class="card">
+          <h3>Producció per Parcel·la</h3>
+          <canvas id="chartParcela"></canvas>
+          <div id="taulaParcela"></div>
+        </div>
+      </div>
+    </div>
+
   </main>
 </body>
+
 </html>

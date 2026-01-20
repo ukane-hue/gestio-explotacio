@@ -1,77 +1,233 @@
 <!DOCTYPE html>
 <html lang="ca">
+
 <head>
   <meta charset="UTF-8">
   <title>Gestió de Personal</title>
-  <link rel="stylesheet" href="css/styles.css">
-  <script defer src="js/personal.js"></script>
+  <link rel="stylesheet" href="css/styles.css?v=4">
+  <script src="js/auth_guard.js"></script>
+  <script defer src="js/personal.js?v=4"></script>
 </head>
+
 <body>
   <header>
-    <h1>Gestió de Personal</h1>
+    <h1>
+      <img src="img/logo.png" alt="Logo" class="logo">
+      Gestió Agrícola
+    </h1>
     <nav>
       <a href="index.html">Inici</a>
-      <a href="parceles.html">Parcel·les</a>
+      <a href="parceles.html">Nova Parcel·la</a>
+      <a href="gestio_parceles.html">Gestió Parcel·les</a>
       <a href="tractaments.html">Tractaments</a>
       <a href="collites.html">Collites</a>
-      <a href="personal.html">Personal</a>
-      <a href="php/logout.php" style="background-color: #dc3545; padding: 5px 10px; border-radius: 4px; color: white; text-decoration: none;">Tancar Sessió</a>
+      <a href="maquinaria.html">Maquinària</a>
+      <a href="personal.html" class="active">Personal</a>
+      
+      <a href="Inventari.html">Inventari</a>
+      <a href="observacions.html">Observacions</a>
+      <a href="php/logout.php">Tancar Sessió</a>
     </nav>
   </header>
-  <main>
-    <h2>Registrar nou treballador</h2>
-    <form id="formPersonal" action="php/guardar_personal.php" method="POST">
-      <fieldset>
-        <legend>Dades Personals</legend>
-        
-        <label for="nom">Nom i Cognoms:</label>
-        <input type="text" name="nom" id="nom" required>
 
-        <label for="nif">NIF/NIE:</label>
-        <input type="text" name="nif" id="nif" required>
+  <main class="container">
+    <div class="tabs">
+      <div class="tab active" data-target="personal">Personal</div>
 
-        <label for="nss">NSS (Núm. Seguretat Social):</label>
-        <input type="text" name="nss" id="nss">
+      <div class="tab" data-target="tasques">Tasques</div>
+      <div class="tab" data-target="registre">Registre Diari</div>
+    </div>
 
-        <label for="telefon">Telèfon:</label>
-        <input type="tel" name="telefon" id="telefon">
+    <!-- PESTANYA 1: PERSONAL -->
+    <div id="personal" class="tab-content active">
+      <div class="card">
+        <h3>Registrar Nou Treballador</h3>
+        <form id="formTreballador">
 
-        <label for="email">Correu Electrònic:</label>
-        <input type="email" name="email" id="email">
-      </fieldset>
+          <!-- Secció 1: Dades Personals -->
+          <div class="form-section">
+            <span class="form-section-title">Dades Personals</span>
+            <div class="form-grid">
+              <div>
+                <label>Nom</label>
+                <input type="text" name="nom" required placeholder="Ex: Joan">
+              </div>
+              <div>
+                <label>Cognoms</label>
+                <input type="text" name="cognom" required placeholder="Ex: Garcia Perez">
+              </div>
+              <div>
+                <label>DNI/NIE</label>
+                <input type="text" name="dni" required placeholder="12345678X">
+              </div>
+            </div>
+          </div>
 
-      <fieldset>
-        <legend>Dades Laborals</legend>
+          <!-- Secció 2: Dades Professionals i Contacte -->
+          <div class="form-section">
+            <span class="form-section-title">Informació Professional</span>
+            <div class="form-grid">
+              <div>
+                <label>Telèfon</label>
+                <input type="text" name="telefon" placeholder="600 000 000">
+              </div>
+              <div>
+                <label>Email (Contacte)</label>
+                <input type="email" name="email" id="emailTreballador" placeholder="joan@example.com">
+              </div>
+              <div>
+                <label>Categoria</label>
+                <select name="categoria">
+                  <option value="Peó">Peó</option>
+                  <option value="Capatàs">Capatàs</option>
+                  <option value="Tractorista">Tractorista</option>
+                  <option value="Administratiu">Administratiu</option>
+                </select>
+              </div>
+              <div>
+                <label>Carnet Aplicador</label>
+                <input type="text" name="num_carnet_aplicador" placeholder="Opcional">
+              </div>
+            </div>
+          </div>
 
-        <label for="carrec">Càrrec:</label>
-        <select name="carrec" id="carrec" required>
-            <option value="peo">Peó agrícola</option>
-            <option value="encarregat">Encarregat</option>
-            <option value="tractorista">Tractorista</option>
-            <option value="tecnic">Tècnic</option>
-            <option value="administratiu">Administratiu</option>
-        </select>
+          <!-- Secció 3: Accés al Sistema -->
+          <div class="form-section" style="border-color: var(--primary-light); background-color: #F0FDF4;">
+            <span class="form-section-title" style="color: var(--primary-dark);">Accés al Sistema</span>
 
-        <label for="tipus_contracte">Tipus de Contracte:</label>
-        <select name="tipus_contracte" id="tipus_contracte" required>
-            <option value="temporal">Temporal</option>
-            <option value="indefinit">Indefinit</option>
-            <option value="fix_discontinu">Fix-Discontinu</option>
-            <option value="practiques">Pràctiques</option>
-            <option value="altres">Altres</option>
-        </select>
+            <label class="checkbox-wrapper">
+              <input type="checkbox" id="checkUsuari" name="crear_usuari">
+              <span>Habilitar accés d'usuari (Login)</span>
+            </label>
 
-        <label for="durada_contracte">Data Fi Contracte (Opcional si és indefinit):</label>
-        <input type="date" name="durada_contracte" id="durada_contracte">
+            <div id="campsUsuari"
+              style="display: none; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px dashed var(--primary-color);">
+              <div class="form-grid">
+                <div>
+                  <label>Contrasenya</label>
+                  <input type="password" name="password" id="passwordUsuari" placeholder="••••••••">
+                </div>
+                <div>
+                  <label>Rol de Sistema</label>
+                  <select name="rol" id="rolUsuari">
+                    <option value="operari">Operari (Bàsic)</option>
+                    <option value="recoltador">Recoltador (Només Collites)</option>
+                    <option value="gestor">Gestor (Supervisió)</option>
+                    <option value="admin">Administrador (Total)</option>
+                  </select>
+                </div>
+              </div>
+              <small style="color: var(--text-secondary);">* L'usuari farà login amb el seu <strong>Email</strong> i
+                aquesta contrasenya.</small>
+            </div>
+          </div>
 
-        <div style="margin-top: 15px; display: flex; align-items: center; gap: 10px;">
-            <input type="checkbox" name="carnet" id="carnet" style="width: auto;">
-            <label for="carnet" style="display: inline; margin: 0;">Té carnet fitosanitari?</label>
-        </div>
-      </fieldset>
+          <button type="submit">Registrar Treballador</button>
+          <p id="msgTreballador"></p>
+        </form>
+      </div>
 
-      <button type="submit">Guardar Treballador</button>
-    </form>
+      <div class="card" style="margin-top: 20px;">
+        <h3>Llistat de Treballadors</h3>
+        <table id="taulaTreballadors">
+          <thead>
+            <tr>
+              <th>Nom</th>
+              <th>DNI</th>
+              <th>Categoria</th>
+              <th>Telèfon</th>
+              <th>Carnet</th>
+              <th>Accions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PESTANYA 2: TASQUES -->
+    <div id="tasques" class="tab-content">
+      <div class="card">
+        <h3>Nova Tasca</h3>
+        <form id="formTasca">
+          <label>Nom de la Tasca:</label>
+          <input type="text" name="nom" required placeholder="Ex: Podar, Collir...">
+          <label>Data Prevista:</label>
+          <input type="date" name="data_prevista" required>
+          <label>Descripció:</label>
+          <textarea name="descripcio"></textarea>
+          <button type="submit">Crear Tasca</button>
+
+          <p id="msgTasca"></p>
+        </form>
+      </div>
+      <div class="card" style="margin-top: 20px;">
+        <h3>Catàleg de Tasques</h3>
+        <ul id="llistaTasques"></ul>
+      </div>
+
+
+    </div>
+
+    <!-- PESTANYA 3: REGISTRE DIARI -->
+    <div id="registre" class="tab-content">
+      <div class="card">
+        <h3>Fitxar Feina</h3>
+        <form id="formRegistre">
+          <div class="row">
+            <div>
+              <label>Treballador:</label>
+              <select name="id_treballador" id="selTreballador" required></select>
+            </div>
+            <div>
+              <label>Tasca:</label>
+              <select name="id_tasca" id="selTasca" required></select>
+            </div>
+          </div>
+          <div class="row">
+            <div>
+              <label>Data:</label>
+              <input type="date" name="data" required>
+            </div>
+            <div>
+              <label>Parcel·la (Opcional):</label>
+              <select name="id_parcela" id="selParcela"></select>
+            </div>
+          </div>
+          <div class="row">
+            <div>
+              <label>Hora Inici:</label>
+              <input type="time" name="hora_inici">
+            </div>
+            <div>
+              <label>Hora Fi:</label>
+              <input type="time" name="hora_fi">
+            </div>
+          </div>
+          <button type="submit">Registrar Feina</button>
+          <p id="msgRegistre"></p>
+        </form>
+      </div>
+
+      <div class="card" style="margin-top: 20px;">
+        <h3>Històric de Feines</h3>
+        <table id="taulaRegistre" class="styled-table" style="width:100%">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Treballador</th>
+              <th>Tasca</th>
+              <th>Parcel·la</th>
+              <th>H. Inici</th>
+              <th>H. Fi</th>
+              <th>Accions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
   </main>
 </body>
+
 </html>

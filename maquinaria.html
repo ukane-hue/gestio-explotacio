@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestió de Maquinària</title>
+    <link rel="stylesheet" href="css/styles.css?v=4">
+    <script src="js/auth_guard.js"></script>
+    <script src="js/maquinaria.js" defer></script>
+</head>
+
+<body>
+    <header>
+        <h1>Gestió de Maquinària</h1>
+        <nav>
+            <a href="index.html">Inici</a>
+            <a href="parceles.html">Nova Parcel·la</a>
+            <a href="gestio_parceles.html">Gestió Parcel·les</a>
+            <a href="tractaments.html">Tractaments</a>
+            <a href="collites.html">Collites</a>
+            <a href="maquinaria.html" class="active">Maquinària</a>
+            <a href="personal.html">Personal</a>
+            <a href="inventari.html">Inventari</a>
+            <a href="observacions.html">Observacions</a>
+            <a href="php/logout.php" style="color: #ff9999;">Tancar Sessió</a>
+        </nav>
+    </header>
+
+    <main class="container">
+        <div class="card">
+            <h3>Registrar Nova Màquina</h3>
+            <form id="formMaquinaria">
+                <div class="row">
+                    <div>
+                        <label>Nom:</label>
+                        <input type="text" name="nom" required placeholder="Ex: Tractor John Deere">
+                    </div>
+                    <div>
+                        <label>Tipus:</label>
+                        <select name="tipus">
+                            <option value="Tractor">Tractor</option>
+                            <option value="Atomitzador">Atomitzador</option>
+                            <option value="Remolc">Remolc</option>
+                            <option value="Eina Manual">Eina Manual</option>
+                            <option value="Altre">Altre</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div>
+                        <label>Matrícula (si en té):</label>
+                        <input type="text" name="matricula">
+                    </div>
+                    <div>
+                        <label>Data Compra:</label>
+                        <input type="date" name="data_compra">
+                    </div>
+                </div>
+                <div class="row">
+                    <div>
+                        <label>Estat:</label>
+                        <select name="estat">
+                            <option value="actiu">Actiu</option>
+                            <option value="inactiu">Inactiu</option>
+                            <option value="reparacio">En Reparació</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit">Guardar Màquina</button>
+                <p id="msgMaquinaria"></p>
+            </form>
+        </div>
+
+        <div class="card" style="margin-top: 20px;">
+            <h3>Inventari de Maquinària</h3>
+            <table id="taulaMaquinaria">
+                <thead>
+                    <tr>
+                        <th>Nom</th>
+                        <th>Tipus</th>
+                        <th>Matrícula</th>
+                        <th>Estat</th>
+                        <th>Data Compra</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </main>
+</body>
+
+</html>
