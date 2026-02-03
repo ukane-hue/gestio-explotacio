@@ -10,8 +10,8 @@ try {
     }
     
     $pdo = db();
-    $stmt = $pdo->prepare("INSERT INTO tasques (nom_tasca, descripcio) VALUES (?, ?)");
-    $stmt->execute([$nom, $in['descripcio'] ?? null]);
+    $stmt = $pdo->prepare("INSERT INTO tasques (nom_tasca, descripcio, data_prevista) VALUES (?, ?, ?)");
+    $stmt->execute([$nom, $in['descripcio'] ?? null, $in['data_prevista'] ?? null]);
     
     json_out(true, ['id' => $pdo->lastInsertId()]);
 } catch (Throwable $e) {
