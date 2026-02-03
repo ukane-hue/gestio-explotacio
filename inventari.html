@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Inventari - Gestió Explotació Agrícola</title>
+    <link rel="stylesheet" href="css/styles.css?v=4">
+    <script src="js/auth_guard.js"></script>
+    <style>
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .tab-button {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 16px;
+            font-weight: bold;
+            color: #666;
+            transition: color 0.3s, border-bottom 0.3s;
+        }
+
+        .tab-button.active {
+            color: var(--primary-color, #2c3e50);
+            border-bottom: 3px solid var(--accent-color, #27ae60);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+
+        .btn-edit {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn-edit:hover {
+            background-color: #2980b9;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 400px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+
+        .kpi-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            display: inline-block;
+            margin-right: 20px;
+            min-width: 200px;
+            text-align: center;
+        }
+
+        .kpi-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #27ae60;
+            margin: 10px 0;
+        }
+
+        .kpi-label {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>
+            <img src="img/logo.png" alt="Logo" class="logo">
+            Gestió Agrícola
+        </h1>
+        <nav>
+            <a href="index.html">Inici</a>
+            <a href="parceles.html">Nova Parcel·la</a>
+            <a href="gestio_parceles.html">Gestió Parcel·les</a>
+            <a href="tractaments.html">Tractaments</a>
+            <a href="collites.html">Collites</a>
+            <a href="maquinaria.html">Maquinària</a>
+            <a href="personal.html">Personal</a>
+            <a href="inventari.html" class="active">Inventari</a>
+            <a href="observacions.html">Observacions</a>
+            <a href="php/logout.php">Tancar Sessió</a>
+        </nav>
+    </header>
+
+    <main class="container">
+        <h2>Inventari</h2>
+
+        <div class="tabs">
+            <button class="tab-button active" onclick="openTab('productes-tab')">Productes (Fitosanitaris)</button>
+            <button class="tab-button" onclick="openTab('fruits-tab')">Collites (Fruita)</button>
+        </div>
+
+        <!-- PRODUCTES TAB -->
+        <div id="productes-tab" class="tab-content active">
+            <div style="margin-bottom: 10px; text-align: right;">
+                <button onclick="openAddProductModal()" class="btn-edit"
+                    style="background-color: #27ae60; margin-right: 10px;">Afegir Producte</button>
+                <button onclick="loadProductes()" class="btn-edit" style="background-color: #95a5a6;">Actualitzar
+                    Llista</button>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nom Comercial</th>
+                        <th>Tipus</th>
+                        <th>Stock Actual</th>
+                        <th>Preu Unitari (€)</th>
+                        <th>Accions</th>
+                    </tr>
+                </thead>
+                <tbody id="productes-body">
+                    <!-- Loaded via JS -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- FRUITS TAB -->
+        <div id="fruits-tab" class="tab-content">
+            <div style="margin-bottom: 10px; text-align: right;">
+                <button onclick="openAddCollitaModal()" class="btn-edit" style="background-color: #27ae60;">Afegir
+                    Collita</button>
+            </div>
+            <div id="fruits-container" style="display: flex; flex-wrap: wrap; gap: 20px;">
+                <!-- KPIs loaded via JS -->
+            </div>
+
+            <h3 style="margin-top: 30px;">Detall per Varietat</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Varietat</th>
+                        <th>Total Recollit (kg)</th>
+                    </tr>
+                </thead>
+                <tbody id="fruits-body">
+                    <!-- Loaded via JS -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- Modal for Edit Stock -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('editModal')">&times;</span>
+            <h3>Editar Stock Producte</h3>
+            <input type="hidden" id="edit-id">
+            <div class="form-group">
+                <label for="edit-nom">Producte:</label>
+                <input type="text" id="edit-nom" disabled>
+            </div>
+            <div class="form-group">
+                <label for="edit-stock">Stock Actual:</label>
+                <input type="number" id="edit-stock" step="0.01">
+            </div>
+            <div class="form-group">
+                <label for="edit-price">Preu Unitari (€):</label>
+                <input type="number" id="edit-price" step="0.01">
+            </div>
+            <button class="btn-edit" style="width: 100%; background-color: #27ae60;" onclick="saveStock()">Guardar
+                Canvis</button>
+        </div>
+    </div>
+
+    <!-- Modal for Add Product -->
+    <div id="addProductModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('addProductModal')">&times;</span>
+            <h3>Afegir Nou Producte</h3>
+            <div class="form-group">
+                <label>Nom Comercial:</label>
+                <input type="text" id="new-prod-nom">
+            </div>
+            <div class="form-group">
+                <label>Tipus:</label>
+                <select id="new-prod-tipus" style="width: 100%; padding: 8px;">
+                    <option value="fitosanitari">Fitosanitari</option>
+                    <option value="fertilitzant">Fertilitzant</option>
+                    <option value="biologic">Control Biològic</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Stock Inicial:</label>
+                <input type="number" id="new-prod-stock" step="0.01" value="0">
+            </div>
+            <div class="form-group">
+                <label>Preu Unitari (€):</label>
+                <input type="number" id="new-prod-price" step="0.01" value="0">
+            </div>
+            <div class="form-group">
+                <label>Unitat:</label>
+                <input type="text" id="new-prod-unit" value="kg">
+            </div>
+            <button class="btn-edit" style="width: 100%; background-color: #27ae60;"
+                onclick="createProduct()">Afegir</button>
+        </div>
+    </div>
+
+    <!-- Modal for Add Collita -->
+    <div id="addCollitaModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('addCollitaModal')">&times;</span>
+            <h3>Afegir Entrada Collita</h3>
+            <div class="form-group">
+                <label>Parcel·la (Varietat):</label>
+                <select id="new-collita-parcela" style="width: 100%; padding: 8px;">
+                    <!-- Loaded via JS -->
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Quantitat (kg):</label>
+                <input type="number" id="new-collita-qty" step="0.01">
+            </div>
+            <div class="form-group">
+                <label>Data:</label>
+                <input type="date" id="new-collita-date">
+            </div>
+            <button class="btn-edit" style="width: 100%; background-color: #27ae60;" onclick="createCollita()">Guardar
+                Entrada</button>
+        </div>
+    </div>
+
+    <!-- Modal for Edit Collita Stock -->
+    <div id="editCollitaModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('editCollitaModal')">&times;</span>
+            <h3>Ajustar Stock Collita</h3>
+            <input type="hidden" id="edit-collita-varietat">
+            <div class="form-group">
+                <label>Varietat:</label>
+                <input type="text" id="display-collita-varietat" disabled>
+            </div>
+            <div class="form-group">
+                <label>Total Actual (kg):</label>
+                <input type="number" id="edit-collita-total" step="0.01">
+                <small style="color:#666;">Això crearà un ajust automàtic.</small>
+            </div>
+            <button class="btn-edit" style="width: 100%; background-color: #27ae60;" onclick="adjustCollita()">Confirmar
+                Ajust</button>
+        </div>
+    </div>
+
+    <footer>
+        &copy; 2025 Gestió Explotació Agrícola. Tots els drets reservats.
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProductes();
+            loadCollites();
+            loadParcelesForDropdown();
+
+            // Set default date to today
+            document.getElementById('new-collita-date').valueAsDate = new Date();
+        });
+
+        function openTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-button').forEach(el => el.classList.remove('active'));
+
+            document.getElementById(tabId).classList.add('active');
+
+            // Find button that calls this function with this tabId
+            const buttons = document.querySelectorAll('.tab-button');
+            if (tabId === 'productes-tab') buttons[0].classList.add('active');
+            if (tabId === 'fruits-tab') buttons[1].classList.add('active');
+        }
+
+        /* --- PRODUCTES LOGIC --- */
+        let currentProducts = [];
+
+        function loadProductes() {
+            fetch('php/get_inventari_productes.php')
+                .then(res => res.json())
+                .then(data => {
+                    currentProducts = data;
+                    const tbody = document.getElementById('productes-body');
+                    tbody.innerHTML = '';
+                    data.forEach(prod => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${prod.nom_comercial}</td>
+                            <td>${prod.tipus}</td>
+                            <td><strong>${parseFloat(prod.stock_actual).toFixed(2)}</strong> ${prod.unitat_stock || 'kg'}</td>
+                            <td>${parseFloat(prod.preu_unitari).toFixed(2)} €</td>
+                            <td>
+                                <button class="btn-edit" onclick="openEditModal(${prod.id_producte})">Editar</button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                })
+                .catch(err => console.error('Error loading products:', err));
+        }
+
+        function openEditModal(id) {
+            const prod = currentProducts.find(p => p.id_producte == id);
+            if (!prod) return;
+
+            document.getElementById('edit-id').value = prod.id_producte;
+            document.getElementById('edit-nom').value = prod.nom_comercial;
+            document.getElementById('edit-stock').value = prod.stock_actual;
+            document.getElementById('edit-price').value = prod.preu_unitari;
+
+            document.getElementById('editModal').style.display = 'block';
+        }
+
+        function openAddProductModal() {
+            document.getElementById('new-prod-nom').value = '';
+            document.getElementById('new-prod-stock').value = '0';
+            document.getElementById('new-prod-price').value = '0';
+            document.getElementById('addProductModal').style.display = 'block';
+        }
+
+        function createProduct() {
+            const data = {
+                nom_comercial: document.getElementById('new-prod-nom').value,
+                tipus: document.getElementById('new-prod-tipus').value,
+                stock_actual: document.getElementById('new-prod-stock').value,
+                preu_unitari: document.getElementById('new-prod-price').value,
+                unitat_stock: document.getElementById('new-prod-unit').value
+            };
+
+            if (!data.nom_comercial) { alert('Nom obligatori'); return; }
+
+            fetch('php/create_product.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        closeModal('addProductModal');
+                        loadProductes();
+                    } else {
+                        alert('Error: ' + (data.error || 'Unknown'));
+                    }
+                });
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
+        function saveStock() {
+            const id = document.getElementById('edit-id').value;
+            const stock = document.getElementById('edit-stock').value;
+            const price = document.getElementById('edit-price').value;
+
+            fetch('php/save_stock_producte.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id_producte: id, stock: stock, price: price })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        closeModal('editModal');
+                        loadProductes();
+                    } else {
+                        alert('Error guardant acció: ' + (data.error || 'Unknown'));
+                    }
+                })
+                .catch(err => alert('Error de xarxa.'));
+        }
+
+        /* --- COLLITES LOGIC --- */
+        function loadCollites() {
+            fetch('php/get_inventari_collites.php')
+                .then(res => res.json())
+                .then(data => {
+                    const tbody = document.getElementById('fruits-body');
+                    const container = document.getElementById('fruits-container');
+                    tbody.innerHTML = '';
+                    container.innerHTML = '';
+
+                    data.forEach(item => {
+                        // Table Row
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${item.varietat}</td>
+                            <td>${parseFloat(item.total_kg).toFixed(2)} kg</td>
+                            <td>
+                                <button class="btn-edit" onclick="openEditCollitaModal('${item.varietat}', ${item.total_kg})">Editar</button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+
+                        // KPI Card
+                        const card = document.createElement('div');
+                        card.className = 'kpi-card';
+                        card.innerHTML = `
+                            <div class="kpi-label">${item.varietat}</div>
+                            <div class="kpi-value">${parseFloat(item.total_kg).toFixed(0)} kg</div>
+                            <div style="color: #95a5a6; font-size: 0.8rem;">En stock</div>
+                        `;
+                        container.appendChild(card);
+                    });
+                });
+        }
+
+        function loadParcelesForDropdown() {
+            fetch('php/get_parceles_simple.php')
+                .then(res => res.json())
+                .then(data => {
+                    const sel = document.getElementById('new-collita-parcela');
+                    sel.innerHTML = '';
+                    data.forEach(p => {
+                        const opt = document.createElement('option');
+                        opt.value = p.id;
+                        opt.textContent = `${p.nom} (${p.varietat})`;
+                        sel.appendChild(opt);
+                    });
+                });
+        }
+
+        function openAddCollitaModal() {
+            document.getElementById('new-collita-qty').value = '';
+            document.getElementById('addCollitaModal').style.display = 'block';
+        }
+
+        function createCollita() {
+            const data = {
+                parcel_id: document.getElementById('new-collita-parcela').value,
+                quantitat: document.getElementById('new-collita-qty').value,
+                data: document.getElementById('new-collita-date').value
+            };
+
+            if (!data.parcel_id || !data.quantitat) { alert('Dades incomplertes'); return; }
+
+            fetch('php/create_collita.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        closeModal('addCollitaModal');
+                        loadCollites();
+                    } else {
+                        alert('Error: ' + (data.error || 'Unknown'));
+                    }
+                });
+        }
+
+        function openEditCollitaModal(varietat, currentTotal) {
+            document.getElementById('edit-collita-varietat').value = varietat;
+            document.getElementById('display-collita-varietat').value = varietat;
+            document.getElementById('edit-collita-total').value = currentTotal;
+            document.getElementById('editCollitaModal').style.display = 'block';
+        }
+
+        function adjustCollita() {
+            const data = {
+                varietat: document.getElementById('edit-collita-varietat').value,
+                new_total: document.getElementById('edit-collita-total').value
+            };
+
+            fetch('php/adjust_collita_stock.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        closeModal('editCollitaModal');
+                        loadCollites();
+                    } else {
+                        alert('Error: ' + (data.error || 'Unknown'));
+                    }
+                });
+        }
+
+        // Close modal if clicked outside
+        window.onclick = function (event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+
+</html>

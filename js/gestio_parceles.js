@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     initMap();
     carregarSelector();
+    initCalculator();
 
     const selector = document.getElementById('selectorParcela');
     selector.addEventListener('change', carregarDadesParcela);
@@ -62,6 +63,7 @@ function actualitzarDadesGeo(layer) {
         const area = L.GeometryUtil.geodesicArea(layer.getLatLngs()[0]);
         document.getElementById('superficie').value = (area / 10000).toFixed(2);
         document.getElementById('areaInfo').innerHTML = `<strong>Àrea calculada:</strong> ${(area / 10000).toFixed(2)} ha`;
+        updateCalculator();
     }
 
     const geojson = layer.toGeoJSON();
@@ -131,6 +133,9 @@ function carregarDadesParcela() {
 
     // Refrescar mapa per evitar gris
     setTimeout(() => { map.invalidateSize(); }, 100);
+
+    // Actualitzar calculadora
+    updateCalculator();
 }
 
 async function guardarCanvis(e) {
@@ -213,4 +218,75 @@ async function eliminarParcela() {
         console.error(e);
         alert("Error de connexió.");
     }
+}
+
+/* --- CALCULADORA DE COSTOS --- */
+let productsCache = [];
+
+async function initCalculator() {
+    const select = document.getElementById('calcProducte');
+    const dosisInput = document.getElementById('calcDosi');
+    const areaInput = document.getElementById('superficie');
+
+    if (!select) return;
+
+    try {
+        const res = await fetch('php/get_inventari_productes.php');
+        const products = await res.json();
+        productsCache = products;
+
+        select.innerHTML = '<option value="">-- Selecciona producte --</option>';
+        products.forEach(p => {
+            const opt = document.createElement('option');
+            opt.value = p.id_producte;
+            opt.textContent = `${p.nom_comercial} (${parseFloat(p.preu_unitari).toFixed(2)} €/${p.unitat_stock || 'ud'})`;
+            select.appendChild(opt);
+        });
+
+    } catch (e) {
+        console.error("Error carregant productes per calculadora:", e);
+    }
+
+    // Listeners
+    select.addEventListener('change', updateCalculator);
+    dosisInput.addEventListener('input', updateCalculator);
+    areaInput.addEventListener('input', updateCalculator);
+}
+
+function updateCalculator() {
+    // Check if elements exist (might be on a page without them if shared JS, but this is specific file)
+    const select = document.getElementById('calcProducte');
+    if (!select) return;
+
+    const prodId = select.value;
+    const dosi = parseFloat(document.getElementById('calcDosi').value) || 0;
+    const area = parseFloat(document.getElementById('superficie').value) || 0;
+
+    const prod = productsCache.find(p => p.id_producte == prodId);
+
+    const priceDisplay = document.getElementById('calcPreu');
+    const totalQtyDisplay = document.getElementById('calcTotalQty');
+    const totalCostDisplay = document.getElementById('calcTotalCost');
+    const unitDisplay = document.getElementById('calcUnit');
+
+    if (!prod) {
+        priceDisplay.value = "-";
+        totalQtyDisplay.textContent = "0";
+        totalCostDisplay.textContent = "0.00 €";
+        return;
+    }
+
+    // Mostrar preu unitari
+    const price = parseFloat(prod.preu_unitari);
+    const unit = prod.unitat_stock || 'unitats';
+    priceDisplay.value = `${price.toFixed(2)} € / ${unit}`;
+
+    if (unitDisplay) unitDisplay.textContent = unit;
+
+    // Calcular
+    const totalQty = area * dosi;
+    const totalCost = totalQty * price;
+
+    totalQtyDisplay.textContent = totalQty.toFixed(2);
+    totalCostDisplay.textContent = `${totalCost.toFixed(2)} €`;
 }

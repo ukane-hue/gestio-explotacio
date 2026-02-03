@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Gestió de Collites i Producció</title>
-  <link rel="stylesheet" href="css/styles.css?v=3">
+  <link rel="stylesheet" href="css/styles.css?v=4">
   <style>
     /* Estils bàsics per a pestanyes */
     .tabs {
@@ -62,6 +62,7 @@
       <a href="collites.html" class="active">Collites</a>
       <a href="personal.html">Personal</a>
       <a href="maquinaria.html">Maquinària</a>
+      <a href="inventari.html">Inventari</a>
       <a href="observacions.html">Observacions</a>
       <a href="php/logout.php" style="color: #ff9999;">Tancar Sessió</a>
     </nav>
@@ -144,6 +145,7 @@
               <th>Varietat</th>
               <th>Quantitat</th>
               <th>Lot</th>
+              <th>Accions</th>
             </tr>
           </thead>
           <tbody>
@@ -191,6 +193,21 @@
         <button type="submit">Guardar Control</button>
         <p id="missatgeQualitat"></p>
       </form>
+
+      <hr class="divider" style="margin: 30px 0;">
+      <h3>Històric Controls Qualitat</h3>
+      <table id="taulaQualitat" class="styled-table">
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Parcel·la</th>
+            <th>Calibre</th>
+            <th>% Com.</th>
+            <th>Accions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
     </div>
 
     <!-- PESTANYA 3: TRAÇABILITAT -->

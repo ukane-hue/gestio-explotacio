@@ -187,8 +187,7 @@ async function carregarInformes() {
       renderChart('chartVarietat', json.data.per_varietat, 'nom_varietat', 'total_kg', 'Producció per Varietat', 'bar');
       renderChart('chartParcela', json.data.per_parcela, 'nom_parcela', 'total_kg', 'Producció per Parcel·la', 'pie');
 
-      // Llistat de recents (si estem a la pestanya de registre o informes, o sempre que es cridi)
-      // Però normalment això està a la pestanya registre.
+      // Llistat de recents
       actualitzarTaulaRecents(json.data.recents);
     }
   } catch (e) {
@@ -202,7 +201,7 @@ function actualitzarTaulaRecents(recents) {
 
   tbody.innerHTML = '';
   if (!recents || recents.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5">Cap collita recent.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6">Cap collita recent.</td></tr>';
     return;
   }
 
@@ -214,65 +213,102 @@ function actualitzarTaulaRecents(recents) {
             <td>${r.nom_varietat}</td>
             <td>${parseFloat(r.quantitat_recoltada).toFixed(2)} ${r.unitat}</td>
             <td><small>${r.lot_id}</small></td>
+            <td>
+                <button onclick="eliminarCollita(${r.id_collita})" style="background:#ef4444; padding:2px 5px; font-size:0.8rem;">X</button>
+            </td>
         `;
     tbody.appendChild(tr);
   });
 }
 
-function renderChart(canvasId, data, labelKey, valueKey, title, type = 'bar') {
-  const ctx = document.getElementById(canvasId);
-  if (!ctx) return;
-
-  // Destruir gràfic anterior si existeix per evitar solapaments
-  if (ctx.chartInstance) {
-    ctx.chartInstance.destroy();
-  }
-
-  if (typeof Chart !== 'undefined') {
-    const labels = data.map(d => d[labelKey]);
-    const values = data.map(d => d[valueKey]);
-
-    // Colors macos
-    const colors = [
-      'rgba(54, 162, 235, 0.7)',
-      'rgba(255, 99, 132, 0.7)',
-      'rgba(75, 192, 192, 0.7)',
-      'rgba(255, 206, 86, 0.7)',
-      'rgba(153, 102, 255, 0.7)',
-      'rgba(255, 159, 64, 0.7)'
-    ];
-
-    ctx.chartInstance = new Chart(ctx, {
-      type: type,
-      data: {
-        labels: labels,
-        datasets: [{
-          label: 'Kg Recol·lectats',
-          data: values,
-          backgroundColor: colors.slice(0, values.length),
-          borderColor: colors.slice(0, values.length).map(c => c.replace('0.7', '1')),
-          borderWidth: 1
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          title: { display: true, text: title, font: { size: 16 } },
-          legend: { display: type === 'pie' }
-        },
-        scales: type === 'bar' ? {
-          y: { beginAtZero: true }
-        } : {}
-      }
+window.eliminarCollita = async function (id) {
+  if (!confirm("Eliminar aquesta collita?")) return;
+  try {
+    const res = await fetch('php/delete_collita.php', {
+      method: 'POST', body: JSON.stringify({ id }), headers: { 'Content-Type': 'application/json' }
     });
-  }
+    if ((await res.json()).ok) carregarInformes();
+  } catch (e) { console.error(e); }
+};
+
+
+// TAB QUALITAT
+
+async function carregarControlsQualitat() {
+  try {
+    const res = await fetch('php/get_controls_qualitat.php');
+    const json = await res.json();
+    const tbody = document.querySelector('#taulaQualitat tbody');
+    if (tbody && json.ok) {
+      tbody.innerHTML = '';
+      json.data.forEach(q => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+                    <td>${q.data_control}</td>
+                    <td>${q.nom_parcela}-${q.nom_varietat}</td>
+                    <td>${q.calibre || '-'}</td>
+                    <td>${q.percentatge_comercialitzable || '-'} %</td>
+                    <td>
+                         <button onclick="eliminarControlQualitat(${q.id_control})" style="background:#ef4444; padding:2px 5px; font-size:0.8rem;">X</button>
+                    </td>
+                `;
+        tbody.appendChild(tr);
+      });
+    }
+  } catch (e) { }
 }
 
-// Funció auxiliar per omplir el select de collites a la pestanya de qualitat
-async function carregarCollitesRecents() {
-  // Això requeriria un endpoint 'get_collites.php'. 
-  // Per ara no el tenim, però seria similar a get_plantacions.
-  // Deixem-ho pendent o fem un mock ràpid si cal.
+window.eliminarControlQualitat = async function (id) {
+  if (!confirm("Eliminar control?")) return;
+  try {
+    const res = await fetch('php/delete_control_qualitat.php', {
+      method: 'POST', body: JSON.stringify({ id }), headers: { 'Content-Type': 'application/json' }
+    });
+    if ((await res.json()).ok) carregarControlsQualitat();
+  } catch (e) { }
+};
+
+
+// Replace existing setupTabs with one that calls checks
+function setupTabs() {
+  const tabs = document.querySelectorAll('.tab');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+      tab.classList.add('active');
+      const targetId = tab.getAttribute('data-target');
+      document.getElementById(targetId).classList.add('active');
+
+      if (targetId === 'informes' || targetId === 'registre') {
+        carregarInformes();
+      }
+      if (targetId === 'qualitat') {
+        carregarControlsQualitat();
+        carregarCollitesRecentsDummy(); // Populate select
+      }
+    });
+  });
+}
+
+// Dummy fill for select inside Qualitat tab (needs real data or reuse recents)
+async function carregarCollitesRecentsDummy() {
+  // Reuse reports endpoint to get recents for the select
+  try {
+    const res = await fetch('php/get_informe_collita.php');
+    const json = await res.json();
+    const sel = document.getElementById('collita_id_qualitat');
+    if (sel && json.ok) {
+      sel.innerHTML = '<option value="">-- Selecciona Collita --</option>';
+      json.data.recents.forEach(r => {
+        const opt = document.createElement('option');
+        opt.value = r.id_collita;
+        opt.textContent = `${r.data_inici} - ${r.nom_parcela} (${r.lot_id})`;
+        sel.appendChild(opt);
+      });
+    }
+  } catch (e) { }
 }
 
 async function cercarTracabilitat() {

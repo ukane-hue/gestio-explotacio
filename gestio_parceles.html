@@ -6,7 +6,7 @@
     <title>Gestió de Parcel·les</title>
 
     <!-- Estils propis -->
-    <link rel="stylesheet" href="css/styles.css?v=3">
+    <link rel="stylesheet" href="css/styles.css?v=4">
     <script src="js/auth_guard.js"></script>
     <!-- Leaflet -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
@@ -32,6 +32,7 @@
             <a href="collites.html">Collites</a>
             <a href="maquinaria.html">Maquinària</a>
             <a href="personal.html">Personal</a>
+            <a href="inventari.html">Inventari</a>
             <a href="observacions.html">Observacions</a>
             <a href="php/logout.php">Tancar Sessió</a>
         </nav>
@@ -77,6 +78,36 @@
                     <p id="areaInfo"><strong>Àrea calculada:</strong> –</p>
                 </div>
 
+                <!-- Calculadora de Costos -->
+                <fieldset
+                    style="margin-top: 20px; border: 1px solid #ddd; padding: 15px; border-radius: 8px; background-color: #f9f9f9;">
+                    <legend style="font-weight: bold; color: #2c3e50;">Calculadora de Costos</legend>
+
+                    <label for="calcProducte">Producte (de l'inventari):</label>
+                    <select id="calcProducte" style="width: 100%; padding: 8px; margin-bottom: 10px;">
+                        <option value="">-- Selecciona producte --</option>
+                    </select>
+
+                    <div style="display: flex; gap: 20px;">
+                        <div style="flex: 1;">
+                            <label for="calcDosi">Dosi (unitats/ha):</label>
+                            <input type="number" id="calcDosi" step="0.01" min="0" placeholder="Ex: 2.5">
+                        </div>
+                        <div style="flex: 1;">
+                            <label>Preu Unitari:</label>
+                            <input type="text" id="calcPreu" disabled value="-" style="background-color: #eee;">
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #eee;">
+                        <p><strong>Total Quantitat necessària:</strong> <span id="calcTotalQty"
+                                style="color: #2980b9;">0</span> <span id="calcUnit">unitats</span></p>
+                        <p style="font-size: 1.1em;"><strong>Cost Total estimat:</strong> <span id="calcTotalCost"
+                                style="color: #c0392b; font-weight: bold;">0.00 €</span></p>
+                    </div>
+                </fieldset>
+
+                <label for="coordenades" style="margin-top: 20px; display:block;">Coordenades o descripció:</label>
                 <textarea name="coordenades" id="coordenades" rows="3"></textarea>
 
                 <div style="display: flex; gap: 10px; margin-top: 20px;">

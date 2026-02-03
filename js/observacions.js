@@ -80,12 +80,25 @@ async function carregarObservacions() {
                     <td>${o.plaga_o_malaltia}</td>
                     <td>${o.nivell_incidencia}</td>
                     <td style="font-size:0.8em;">${geo}</td>
+                    <td>
+                        <button onclick="eliminarObservacio(${o.id_observacio})" style="background:#ef4444; padding:2px 5px; font-size:0.8rem;">X</button>
+                    </td>
                 `;
                 tbody.appendChild(tr);
             });
         }
     } catch (e) { console.error(e); }
 }
+
+window.eliminarObservacio = async function (id) {
+    if (!confirm("Eliminar observació?")) return;
+    try {
+        const res = await fetch('php/delete_observacio.php', {
+            method: 'POST', body: JSON.stringify({ id }), headers: { 'Content-Type': 'application/json' }
+        });
+        if ((await res.json()).ok) carregarObservacions();
+    } catch (e) { }
+};
 
 function obtenirUbicacio() {
     const status = document.getElementById('geoStatus');
