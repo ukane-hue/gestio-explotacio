@@ -1,26 +1,35 @@
 <?php
-require 'db_config.php';
+require 'config.php';
 header('Content-Type: application/json');
 
-$data = json_decode(file_get_contents('php://input'), true);
+try {
+    $data = get_json_input();
 
-if (isset($data['nom_comercial']) && isset($data['tipus'])) {
-    $nom = $conn->real_escape_string($data['nom_comercial']);
-    $tipus = $conn->real_escape_string($data['tipus']);
-    $stock = isset($data['stock_actual']) ? floatval($data['stock_actual']) : 0;
-    $preu = isset($data['preu_unitari']) ? floatval($data['preu_unitari']) : 0;
-    $unitat = isset($data['unitat_stock']) ? $conn->real_escape_string($data['unitat_stock']) : 'kg';
+    if (isset($data['nom_comercial']) && isset($data['tipus'])) {
+        $nom = trim($data['nom_comercial']);
+        $tipus = trim($data['tipus']);
+        $stock = isset($data['stock_actual']) ? floatval($data['stock_actual']) : 0;
+        $preu = isset($data['preu_unitari']) ? floatval($data['preu_unitari']) : 0;
+        $unitat = isset($data['unitat_stock']) ? trim($data['unitat_stock']) : 'kg';
 
-    $sql = "INSERT INTO productes (nom_comercial, tipus, stock_actual, preu_unitari, unitat_stock) VALUES ('$nom', '$tipus', $stock, $preu, '$unitat')";
+        if (empty($nom)) {
+            json_out(false, ['error' => 'El nom és obligatori']);
+        }
 
-    if ($conn->query($sql) === TRUE) {
-        echo json_encode(['success' => true, 'id' => $conn->insert_id]);
+        $pdo = db();
+        $sql = "INSERT INTO productes (nom_comercial, tipus, stock_actual, preu_unitari, unitat_stock) VALUES (?, ?, ?, ?, ?)";
+        $stmt = $pdo->prepare($sql);
+        
+        if ($stmt->execute([$nom, $tipus, $stock, $preu, $unitat])) {
+            json_out(true, ['id' => $pdo->lastInsertId()]);
+        } else {
+            json_out(false, ['error' => 'Error executant la consulta']);
+        }
     } else {
-        echo json_encode(['success' => false, 'error' => $conn->error]);
+        json_out(false, ['error' => 'Falten camps obligatoris']);
     }
-} else {
-    echo json_encode(['success' => false, 'error' => 'Missing required fields']);
-}
 
-$conn->close();
+} catch (Throwable $e) {
+    json_out(false, ['error' => $e->getMessage()]);
+}
 ?>

@@ -5,7 +5,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 $DB_HOST = 'localhost';
-$DB_NAME = 'gestio_explotacio1';
+$DB_NAME = 'gestio_explotacio';
 $DB_USER = 'root';
 $DB_PASS = '';
 
@@ -120,7 +120,7 @@ function calcular_area_m2_des_de_geojson($geojson) {
 
 function json_out($ok, $extra = []) {
   header('Content-Type: application/json');
-  echo json_encode(array_merge(['ok' => $ok], $extra));
+  echo json_encode(array_merge(['ok' => $ok, 'success' => $ok], $extra));
   exit;
 }
 

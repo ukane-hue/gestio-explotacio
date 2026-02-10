@@ -384,6 +384,7 @@
                             <td>${parseFloat(prod.preu_unitari).toFixed(2)} €</td>
                             <td>
                                 <button class="btn-edit" onclick="openEditModal(${prod.id_producte})">Editar</button>
+                                <button class="btn-edit" style="background-color: #e74c3c; margin-left: 5px;" onclick="deleteProduct(${prod.id_producte})">Eliminar</button>
                             </td>
                         `;
                         tbody.appendChild(tr);
@@ -462,6 +463,25 @@
                     }
                 })
                 .catch(err => alert('Error de xarxa.'));
+        }
+
+        function deleteProduct(id) {
+            if (!confirm('Estàs segur que vols eliminar aquest producte? Aquesta acció no es pot desfer.')) return;
+
+            fetch('php/delete_product.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id_producte: id })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success || data.ok) {
+                    loadProductes();
+                } else {
+                    alert('Error eliminant producte: ' + (data.error || 'Unknown'));
+                }
+            })
+            .catch(err => alert('Error de xarxa.'));
         }
 
         /* --- COLLITES LOGIC --- */

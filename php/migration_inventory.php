@@ -1,5 +1,5 @@
 <?php
-$servername='localhost';$username='root';$password='';$dbname='gestio_explotacio1';$socket='/opt/lampp/var/mysql/mysql.sock';
+$servername='localhost';$username='root';$password='';$dbname='gestio_explotacio';$socket='/opt/lampp/var/mysql/mysql.sock';
 $conn=new mysqli($servername,$username,$password,$dbname, 3306, $socket);
 if($conn->connect_error){die('Error de connexió: '.$conn->connect_error);}
 
