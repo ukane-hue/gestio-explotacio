@@ -108,7 +108,10 @@ CREATE TABLE productes (
     classificacio_toxicologica VARCHAR(100),
     ecotoxicologica VARCHAR(100),
     compatible_ecologic BOOLEAN DEFAULT FALSE,
-    registre_oficial VARCHAR(100)
+    registre_oficial VARCHAR(100),
+    stock_actual DECIMAL(10,2) DEFAULT 0.00,
+    unitat_stock VARCHAR(20) DEFAULT 'kg',
+    preu_unitari DECIMAL(10,2) DEFAULT 0.00
 );
 
 -- 9. tractaments
