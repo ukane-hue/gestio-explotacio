@@ -15,11 +15,15 @@ try {
     
     // 2. Total collit per parcel·la (a través de plantació)
     $stmt_par = $pdo->query("
-        SELECT p.nom_parcela, SUM(c.quantitat_recoltada) as total_kg
+        SELECT 
+            COALESCE(p.nom_parcela, p2.nom_parcela, 'Desconeguda') as nom_parcela, 
+            SUM(c.quantitat_recoltada) as total_kg
         FROM collites c
         JOIN plantacions pl ON c.id_plantacio = pl.id_plantacio
-        JOIN parceles p ON pl.id_parcela = p.id_parcela
-        GROUP BY p.nom_parcela
+        LEFT JOIN parceles p ON pl.id_parcela = p.id_parcela
+        LEFT JOIN sectors s ON pl.id_sector = s.id_sector
+        LEFT JOIN parceles p2 ON s.id_parcela = p2.id_parcela
+        GROUP BY nom_parcela
     ");
     $per_parcela = $stmt_par->fetchAll();
     
@@ -34,13 +38,17 @@ try {
     
     // 4. Últimes collites (per al llistat)
     $stmt_recents = $pdo->query("
-        SELECT c.id_collita, c.data_inici, p.nom_parcela, v.nom_varietat, c.quantitat_recoltada, c.unitat, c.lot_id
+        SELECT 
+            c.id_collita, c.data_inici, 
+            COALESCE(p.nom_parcela, p2.nom_parcela, 'Desconeguda') as nom_parcela, 
+            v.nom_varietat, c.quantitat_recoltada, c.unitat, c.lot_id
         FROM collites c
         JOIN plantacions pl ON c.id_plantacio = pl.id_plantacio
-        JOIN parceles p ON pl.id_parcela = p.id_parcela
+        LEFT JOIN parceles p ON pl.id_parcela = p.id_parcela
+        LEFT JOIN sectors s ON pl.id_sector = s.id_sector
+        LEFT JOIN parceles p2 ON s.id_parcela = p2.id_parcela
         JOIN varietats v ON c.id_varietat = v.id_varietat
         ORDER BY c.data_inici DESC, c.id_collita DESC
-        LIMIT 10
     ");
     $recents = $stmt_recents->fetchAll();
     

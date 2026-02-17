@@ -82,8 +82,8 @@
 
       <h2>Nova Collita</h2>
       <form id="formCollites">
-        <label for="plantacio_id">Plantació (Parcel·la - Varietat):</label>
-        <select name="plantacio_id" id="plantacio_id" required>
+        <label for="id_plantacio">Plantació (Parcel·la - Varietat):</label>
+        <select name="id_plantacio" id="id_plantacio" required>
           <option value="">Carregant plantacions...</option>
         </select>
 
@@ -162,7 +162,7 @@
       <h2>Control de Qualitat</h2>
       <form id="formQualitat">
         <label for="collita_id_qualitat">Selecciona Collita (Lot):</label>
-        <select name="collita_id" id="collita_id_qualitat" required>
+        <select name="id_collita" id="collita_id_qualitat" required>
           <option value="">Carregant collites recents...</option>
           <!-- S'omplirà amb JS -->
         </select>
@@ -223,13 +223,13 @@
           <h3>Fitxa del Lot: <span id="lotTitle"></span></h3>
           <div class="row">
             <div>
-              <h4>Origen</h4>
+              <h4>Origen:</h4>
               <p><strong>Parcel·la:</strong> <span id="traceParcela"></span></p>
               <p><strong>Varietat:</strong> <span id="traceVarietat"></span></p>
               <p><strong>Data Plantació:</strong> <span id="traceDataPlantacio"></span></p>
             </div>
             <div>
-              <h4>Collita</h4>
+              <h4>Collita:</h4>
               <p><strong>Data:</strong> <span id="traceDataCollita"></span></p>
               <p><strong>Quantitat:</strong> <span id="traceQuantitat"></span></p>
             </div>
@@ -237,7 +237,7 @@
 
           <hr class="divider">
 
-          <h4>Qualitat</h4>
+          <h4>Qualitat:</h4>
           <p id="traceQualitatInfo">Sense dades de qualitat.</p>
 
           <hr class="divider">

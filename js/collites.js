@@ -70,7 +70,7 @@ async function carregarPlantacions() {
     const json = await res.json();
 
     if (json.ok) {
-      const select = document.getElementById('plantacio_id');
+      const select = document.getElementById('id_plantacio');
       select.innerHTML = '<option value="">-- Selecciona Plantació --</option>';
       json.data.forEach(p => {
         const opt = document.createElement('option');
@@ -122,7 +122,10 @@ async function guardarCollita(e) {
   // Modificaré save_collita.php per obtenir id_varietat de la plantació si no s'envia.
 
   // Per ara, enviem el que tenim.
-  data.id_varietat = 1; // Placeholder, el backend hauria de corregir-ho.
+  // Per ara, enviem el que tenim.
+  // data.id_varietat = 1; // Placeholder, el backend hauria de corregir-ho.
+  // We want to force the backend to deduce it, so we don't send *any* value if we don't have it.
+  delete data.id_varietat;
 
   // Recollir treballadors seleccionats
   const checkboxes = document.querySelectorAll('input[name="treballadors[]"]:checked');
@@ -134,18 +137,29 @@ async function guardarCollita(e) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     });
-    const json = await res.json();
 
-    if (json.ok) {
-      msg.textContent = "Collita guardada correctament! Lot: " + json.lot_id;
-      e.target.reset();
-      carregarCollitesRecents(); // Per al select de qualitat
-      carregarInformes(); // Actualitzar taula recents i gràfics
+    // Check if response is JSON
+    const contentType = res.headers.get("content-type");
+    if (contentType && contentType.indexOf("application/json") !== -1) {
+      const json = await res.json();
+      if (json.ok) {
+        msg.textContent = "Collita guardada correctament! Lot: " + json.lot_id;
+        e.target.reset();
+        carregarCollitesRecents(); // Per al select de qualitat
+        carregarInformes(); // Actualitzar taula recents i gràfics
+      } else {
+        msg.textContent = "Error: " + json.error;
+      }
     } else {
-      msg.textContent = "Error: " + json.error;
+      const text = await res.text();
+      console.error("Non-JSON response:", text);
+      msg.textContent = "Error inesperat del servidor. Revisa la consola.";
+      // Optional: show first 100 chars of text in UI
+      msg.textContent += " (" + text.substring(0, 50) + "...)";
     }
+
   } catch (err) {
-    msg.textContent = "Error de xarxa.";
+    msg.textContent = "Error de xarxa: " + err.message;
     console.error(err);
   }
 }
@@ -179,16 +193,16 @@ async function guardarQualitat(e) {
 
 async function carregarInformes() {
   try {
-    const res = await fetch('php/get_informe_collita.php');
+    const res = await fetch('php/get_informe_collita.php?v=' + new Date().getTime());
     const json = await res.json();
 
     if (json.ok) {
       // Gràfics
-      renderChart('chartVarietat', json.data.per_varietat, 'nom_varietat', 'total_kg', 'Producció per Varietat', 'bar');
-      renderChart('chartParcela', json.data.per_parcela, 'nom_parcela', 'total_kg', 'Producció per Parcel·la', 'pie');
+      renderChart('chartVarietat', json.per_varietat, 'nom_varietat', 'total_kg', 'Producció per Varietat', 'bar');
+      renderChart('chartParcela', json.per_parcela, 'nom_parcela', 'total_kg', 'Producció per Parcel·la', 'pie');
 
       // Llistat de recents
-      actualitzarTaulaRecents(json.data.recents);
+      actualitzarTaulaRecents(json.recents);
     }
   } catch (e) {
     console.error("Error carregant informes", e);
@@ -286,27 +300,29 @@ function setupTabs() {
       }
       if (targetId === 'qualitat') {
         carregarControlsQualitat();
-        carregarCollitesRecentsDummy(); // Populate select
+        carregarCollitesRecents(); // Populate select
       }
     });
   });
 }
 
-// Dummy fill for select inside Qualitat tab (needs real data or reuse recents)
-async function carregarCollitesRecentsDummy() {
+// Populate select inside Qualitat tab
+async function carregarCollitesRecents() {
   // Reuse reports endpoint to get recents for the select
   try {
-    const res = await fetch('php/get_informe_collita.php');
+    const res = await fetch('php/get_informe_collita.php?v=' + new Date().getTime());
     const json = await res.json();
     const sel = document.getElementById('collita_id_qualitat');
     if (sel && json.ok) {
       sel.innerHTML = '<option value="">-- Selecciona Collita --</option>';
-      json.data.recents.forEach(r => {
-        const opt = document.createElement('option');
-        opt.value = r.id_collita;
-        opt.textContent = `${r.data_inici} - ${r.nom_parcela} (${r.lot_id})`;
-        sel.appendChild(opt);
-      });
+      if (json.recents) {
+        json.recents.forEach(r => {
+          const opt = document.createElement('option');
+          opt.value = r.id_collita;
+          opt.textContent = `${r.data_inici} - ${r.nom_parcela} (${r.lot_id})`;
+          sel.appendChild(opt);
+        });
+      }
     }
   } catch (e) { }
 }
@@ -327,19 +343,19 @@ async function cercarTracabilitat() {
 
       // Info Bàsica
       document.getElementById('lotTitle').textContent = lotId;
-      document.getElementById('traceParcela').textContent = json.data.info.nom_parcela;
-      document.getElementById('traceVarietat').textContent = json.data.info.nom_varietat;
-      document.getElementById('traceDataPlantacio').textContent = json.data.info.data_plantacio || '-';
-      document.getElementById('traceDataCollita').textContent = json.data.info.data_inici;
-      document.getElementById('traceQuantitat').textContent = `${json.data.info.quantitat_recoltada} ${json.data.info.unitat}`;
+      document.getElementById('traceParcela').textContent = json.info.nom_parcela;
+      document.getElementById('traceVarietat').textContent = json.info.nom_varietat;
+      document.getElementById('traceDataPlantacio').textContent = json.info.data_plantacio || '-';
+      document.getElementById('traceDataCollita').textContent = json.info.data_inici;
+      document.getElementById('traceQuantitat').textContent = `${json.info.quantitat_recoltada} ${json.info.unitat}`;
 
       // Qualitat
       const qDiv = document.getElementById('traceQualitatInfo');
-      if (json.data.qualitat) {
+      if (json.qualitat) {
         qDiv.innerHTML = `
-                    <strong>Calibre:</strong> ${json.data.qualitat.calibre || '-'} mm <br>
-                    <strong>Fermesa:</strong> ${json.data.qualitat.fermesa || '-'} <br>
-                    <strong>% Comercial:</strong> ${json.data.qualitat.percentatge_comercialitzable || '-'}%
+                    <strong>Calibre:</strong> ${json.qualitat.calibre || '-'} mm <br>
+                    <strong>Fermesa:</strong> ${json.qualitat.fermesa || '-'} <br>
+                    <strong>% Comercial:</strong> ${json.qualitat.percentatge_comercialitzable || '-'}%
                 `;
       } else {
         qDiv.textContent = "Sense dades de control de qualitat.";
@@ -348,8 +364,8 @@ async function cercarTracabilitat() {
       // Tractaments
       const tList = document.getElementById('traceTractamentsList');
       tList.innerHTML = '';
-      if (json.data.tractaments && json.data.tractaments.length > 0) {
-        json.data.tractaments.forEach(t => {
+      if (json.tractaments && json.tractaments.length > 0) {
+        json.tractaments.forEach(t => {
           const li = document.createElement('li');
           li.textContent = `${t.data_aplicacio}: ${t.nom_comercial} (${t.materia_activa}) - ${t.quantitat_aplicada} ${t.unitat}`;
           tList.appendChild(li);
@@ -366,4 +382,42 @@ async function cercarTracabilitat() {
     console.error(e);
     alert("Error de connexió.");
   }
+}
+function renderChart(canvasId, data, labelKey, valueKey, label, type) {
+  const ctx = document.getElementById(canvasId);
+  if (!ctx) return;
+
+  // Destroy existing chart if stored (hacky way, ideally store chart instances)
+  if (ctx.chartInstance) {
+    ctx.chartInstance.destroy();
+  }
+
+  if (typeof Chart === 'undefined') {
+    console.warn("Chart.js not loaded");
+    return;
+  }
+
+  const labels = data.map(item => item[labelKey]);
+  const values = data.map(item => item[valueKey]);
+
+  // Create new chart
+  ctx.chartInstance = new Chart(ctx, {
+    type: type,
+    data: {
+      labels: labels,
+      datasets: [{
+        label: label,
+        data: values,
+        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+        borderColor: 'rgba(54, 162, 235, 1)',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: { beginAtZero: true }
+      }
+    }
+  });
 }

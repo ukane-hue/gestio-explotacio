@@ -14,12 +14,15 @@ try {
     $stmt = $pdo->prepare("
         SELECT 
             c.id_collita, c.data_inici, c.quantitat_recoltada, c.unitat,
-            p.nom_parcela, v.nom_varietat, pl.data_plantacio,
+            COALESCE(p.nom_parcela, p2.nom_parcela, 'Desconeguda') as nom_parcela,
+            v.nom_varietat, pl.data_plantacio,
             l.client_final, l.data_creacio
         FROM lots l
         JOIN collites c ON l.id_collita = c.id_collita
         JOIN plantacions pl ON c.id_plantacio = pl.id_plantacio
-        JOIN parceles p ON pl.id_parcela = p.id_parcela
+        LEFT JOIN parceles p ON pl.id_parcela = p.id_parcela
+        LEFT JOIN sectors s ON pl.id_sector = s.id_sector
+        LEFT JOIN parceles p2 ON s.id_parcela = p2.id_parcela
         JOIN varietats v ON c.id_varietat = v.id_varietat
         WHERE l.id_lot = ?
     ");
