@@ -158,6 +158,36 @@
             color: #7f8c8d;
             font-size: 0.9rem;
         }
+
+        /* Low Stock Alert */
+        .low-stock-row {
+            background-color: #fff5f5 !important;
+        }
+
+        .badge-alert {
+            display: inline-block;
+            background-color: #ef4444;
+            color: white;
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            margin-left: 8px;
+            vertical-align: middle;
+            animation: pulse-alert 1.5s infinite;
+        }
+
+        @keyframes pulse-alert {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.6;
+            }
+        }
     </style>
 </head>
 
@@ -186,7 +216,7 @@
 
         <div class="tabs">
             <button class="tab-button active" onclick="openTab('productes-tab')">Productes (Fitosanitaris)</button>
-            <button class="tab-button" onclick="openTab('fruits-tab')">Collites (Fruita)</button>
+            <button class="tab-button" onclick="openTab('fruits-tab')">Collites</button>
         </div>
 
         <!-- PRODUCTES TAB -->
@@ -223,12 +253,15 @@
                 <!-- KPIs loaded via JS -->
             </div>
 
-            <h3 style="margin-top: 30px;">Detall per Varietat</h3>
+            <h3 style="margin-top: 30px;">Registre de Collites</h3>
             <table>
                 <thead>
                     <tr>
-                        <th>Varietat</th>
-                        <th>Total Recollit (kg)</th>
+                        <th>Varietat / Nom</th>
+                        <th>Kg Recollits</th>
+                        <th>Data Collita</th>
+                        <th>Lot ID</th>
+                        <th>Accions</th>
                     </tr>
                 </thead>
                 <tbody id="fruits-body">
@@ -376,11 +409,17 @@
                     const tbody = document.getElementById('productes-body');
                     tbody.innerHTML = '';
                     data.forEach(prod => {
+                        const stock = parseFloat(prod.stock_actual);
+                        const isLow = stock < 5;
                         const tr = document.createElement('tr');
+                        if (isLow) tr.classList.add('low-stock-row');
                         tr.innerHTML = `
                             <td>${prod.nom_comercial}</td>
                             <td>${prod.tipus}</td>
-                            <td><strong>${parseFloat(prod.stock_actual).toFixed(2)}</strong> ${prod.unitat_stock || 'kg'}</td>
+                            <td>
+                                <strong>${stock.toFixed(2)}</strong> ${prod.unitat_stock || 'kg'}
+                                ${isLow ? '<span class="badge-alert">⚠️ Stock baix!</span>' : ''}
+                            </td>
                             <td>${parseFloat(prod.preu_unitari).toFixed(2)} €</td>
                             <td>
                                 <button class="btn-edit" onclick="openEditModal(${prod.id_producte})">Editar</button>
@@ -473,15 +512,15 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ id_producte: id })
             })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success || data.ok) {
-                    loadProductes();
-                } else {
-                    alert('Error eliminant producte: ' + (data.error || 'Unknown'));
-                }
-            })
-            .catch(err => alert('Error de xarxa.'));
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success || data.ok) {
+                        loadProductes();
+                    } else {
+                        alert('Error eliminant producte: ' + (data.error || 'Unknown'));
+                    }
+                })
+                .catch(err => alert('Error de xarxa.'));
         }
 
         /* --- COLLITES LOGIC --- */
@@ -492,31 +531,50 @@
                     const tbody = document.getElementById('fruits-body');
                     const container = document.getElementById('fruits-container');
                     tbody.innerHTML = '';
-                    container.innerHTML = '';
+                    if (container) container.innerHTML = '';
+
+                    if (!Array.isArray(data) || data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#999;">Cap collita registrada.</td></tr>';
+                        return;
+                    }
 
                     data.forEach(item => {
-                        // Table Row
                         const tr = document.createElement('tr');
                         tr.innerHTML = `
-                            <td>${item.varietat}</td>
-                            <td>${parseFloat(item.total_kg).toFixed(2)} kg</td>
+                            <td><strong>${item.nom}</strong></td>
+                            <td>${parseFloat(item.kg).toFixed(2)} kg</td>
+                            <td>${item.data_collita}</td>
+                            <td><small style="color:#999;">${item.lot_id}</small></td>
                             <td>
-                                <button class="btn-edit" onclick="openEditCollitaModal('${item.varietat}', ${item.total_kg})">Editar</button>
+                                <button class="btn-edit" style="background-color:#e74c3c;" onclick="deleteCollita(${item.id_collita})">Eliminar</button>
                             </td>
                         `;
                         tbody.appendChild(tr);
-
-                        // KPI Card
-                        const card = document.createElement('div');
-                        card.className = 'kpi-card';
-                        card.innerHTML = `
-                            <div class="kpi-label">${item.varietat}</div>
-                            <div class="kpi-value">${parseFloat(item.total_kg).toFixed(0)} kg</div>
-                            <div style="color: #95a5a6; font-size: 0.8rem;">En stock</div>
-                        `;
-                        container.appendChild(card);
                     });
+                })
+                .catch(err => {
+                    console.error('Error loading collites:', err);
+                    const tbody = document.getElementById('fruits-body');
+                    if (tbody) tbody.innerHTML = '<tr><td colspan="5">Error carregant collites.</td></tr>';
                 });
+        }
+
+        function deleteCollita(id) {
+            if (!confirm('Segur que vols eliminar aquesta collita?')) return;
+            fetch('php/delete_collita.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: id })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.ok) {
+                        loadCollites();
+                    } else {
+                        alert('Error eliminant: ' + (data.error || 'Desconegut'));
+                    }
+                })
+                .catch(() => alert('Error de xarxa.'));
         }
 
         function loadParcelesForDropdown() {

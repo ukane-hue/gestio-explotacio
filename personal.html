@@ -23,8 +23,8 @@
       <a href="collites.html">Collites</a>
       <a href="maquinaria.html">Maquinària</a>
       <a href="personal.html" class="active">Personal</a>
-      
-      <a href="Inventari.html">Inventari</a>
+
+      <a href="inventari.html">Inventari</a>
       <a href="observacions.html">Observacions</a>
       <a href="php/logout.php">Tancar Sessió</a>
     </nav>
@@ -36,6 +36,7 @@
 
       <div class="tab" data-target="tasques">Tasques</div>
       <div class="tab" data-target="registre">Registre Diari</div>
+      <div class="tab" data-target="treball-parcela">Treball Parcel·la</div>
     </div>
 
     <!-- PESTANYA 1: PERSONAL -->
@@ -224,6 +225,37 @@
             </tr>
           </thead>
           <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PESTANYA 4: TREBALL PARCEL·LA -->
+    <div id="treball-parcela" class="tab-content">
+      <div class="card">
+        <h3>Treball per Parcel·la</h3>
+        <p>Selecciona una parcel·la per veure el resum d'hores treballades per cada persona.</p>
+        <div class="row">
+          <div style="flex:1">
+            <label>Parcel·la:</label>
+            <select id="selParcelaFiltre" style="width:100%"></select>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 20px;">
+        <h3>Resum d'Hores</h3>
+        <table id="taulaTreballParcela" class="styled-table" style="width:100%">
+          <thead>
+            <tr>
+              <th>Treballador</th>
+              <th>Total Hores</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td colspan="2" style="text-align:center">Selecciona una parcel·la per veure els resultats</td>
+            </tr>
+          </tbody>
         </table>
       </div>
     </div>

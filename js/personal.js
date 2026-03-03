@@ -2,8 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupTabs();
   carregarTreballadors();
   carregarTasques();
-  carregarParceles(); // Per al select del registre
-  carregarParceles(); // Per al select del registre
+  carregarParceles(); // Per al select del registre i filtre
 
   // Form Treballador
   const formTreballador = document.getElementById('formTreballador');
@@ -48,6 +47,16 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('formRegistre').addEventListener('submit', async (e) => {
     handleForm(e, 'php/save_registre_treball.php', 'msgRegistre');
   });
+
+  // Filtre Treball Parcel·la
+  const selParcelaFiltre = document.getElementById('selParcelaFiltre');
+  if (selParcelaFiltre) {
+    selParcelaFiltre.addEventListener('change', (e) => {
+      const id = e.target.value;
+      if (id) carregarTreballParcela(id);
+      else resetTaulaTreballParcela();
+    });
+  }
 });
 
 function setupTabs() {
@@ -270,13 +279,62 @@ async function carregarParceles() {
     const json = await res.json();
     if (json.ok) {
       const sel = document.getElementById('selParcela');
-      sel.innerHTML = '<option value="">-- Cap --</option>';
-      json.data.forEach(p => {
-        const opt = document.createElement('option');
-        opt.value = p.id_parcela;
-        opt.textContent = p.nom_parcela;
-        sel.appendChild(opt);
-      });
+      if (sel) {
+        sel.innerHTML = '<option value="">-- Cap --</option>';
+        json.data.forEach(p => {
+          const opt = document.createElement('option');
+          opt.value = p.id_parcela;
+          opt.textContent = p.nom_parcela;
+          sel.appendChild(opt);
+        });
+      }
+
+      // També per al filtre de treball parcel·la
+      const selFiltre = document.getElementById('selParcelaFiltre');
+      if (selFiltre) {
+        selFiltre.innerHTML = '<option value="">-- Selecciona --</option>';
+        json.data.forEach(p => {
+          const opt = document.createElement('option');
+          opt.value = p.id_parcela;
+          opt.textContent = p.nom_parcela;
+          selFiltre.appendChild(opt);
+        });
+      }
     }
   } catch (err) { console.error(err); }
+}
+
+async function carregarTreballParcela(id_parcela) {
+  try {
+    const res = await fetch('php/get_treball_parcela.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id_parcela })
+    });
+    const json = await res.json();
+    const tbody = document.querySelector('#taulaTreballParcela tbody');
+    if (tbody && json.ok) {
+      tbody.innerHTML = '';
+      if (json.data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="2" style="text-align:center">No hi ha registres per aquesta parcel·la</td></tr>';
+        return;
+      }
+      json.data.forEach(r => {
+        const tr = document.createElement('tr');
+        const hores = parseFloat(r.total_hores).toFixed(2);
+        tr.innerHTML = `
+                    <td>${r.nom} ${r.cognom}</td>
+                    <td>${hores} h</td>
+                `;
+        tbody.appendChild(tr);
+      });
+    }
+  } catch (e) { console.error(e); }
+}
+
+function resetTaulaTreballParcela() {
+  const tbody = document.querySelector('#taulaTreballParcela tbody');
+  if (tbody) {
+    tbody.innerHTML = '<tr><td colspan="2" style="text-align:center">Selecciona una parcel·la per veure els resultats</td></tr>';
+  }
 }

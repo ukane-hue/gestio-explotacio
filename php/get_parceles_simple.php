@@ -1,22 +1,36 @@
 <?php
-require 'db_config.php';
+require_once __DIR__ . '/config.php';
 header('Content-Type: application/json');
 
-$sql = "SELECT id, nom, varietat FROM parceles ORDER BY nom ASC";
-$result = $conn->query($sql);
+try {
+    $pdo = db();
 
-$parceles = [];
-if ($result && $result->num_rows > 0) {
-    while($row = $result->fetch_assoc()) {
-        $parceles[] = [
-            'id' => $row['id'],
-            'nom' => $row['nom'],
-            'varietat' => $row['varietat']
+    // Obtenir plantacions (parcel·la + varietat) per al dropdown de collites
+    $sql = "
+        SELECT 
+            pl.id_plantacio AS id,
+            p.nom_parcela,
+            v.nom_varietat
+        FROM plantacions pl
+        JOIN parceles p ON pl.id_parcela = p.id_parcela
+        JOIN varietats v ON pl.id_varietat = v.id_varietat
+        ORDER BY p.nom_parcela, v.nom_varietat
+    ";
+
+    $stmt = $pdo->query($sql);
+    $parceles = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $data = array_map(function($row) {
+        return [
+            'id'       => $row['id'],
+            'nom'      => $row['nom_parcela'],
+            'varietat' => $row['nom_varietat']
         ];
-    }
+    }, $parceles);
+
+    echo json_encode($data);
+
+} catch (Throwable $e) {
+    echo json_encode(['error' => $e->getMessage()]);
 }
-
-echo json_encode($parceles);
-
-$conn->close();
 ?>

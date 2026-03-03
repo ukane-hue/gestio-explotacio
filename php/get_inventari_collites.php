@@ -1,25 +1,48 @@
 <?php
-require 'db_config.php';
+require_once __DIR__ . '/config.php';
 header('Content-Type: application/json');
 
-// Group by variety to get total stock from harvests
-// Note: This matches the request "kg de aquella plantacio" (aggregated by variety)
-$sql = "SELECT varietat, SUM(quantitat) as total_kg 
-        FROM collites 
-        GROUP BY varietat 
-        ORDER BY varietat ASC";
+try {
+    $pdo = db();
 
-$result = $conn->query($sql);
+    // Get all collites with variety name, kg and date
+    $sql = "
+        SELECT 
+            v.nom_varietat AS nom,
+            c.quantitat_recoltada AS kg,
+            c.data_inici AS data_collita,
+            c.lot_id
+        FROM collites c
+        JOIN variats v ON c.id_varietat = v.id_varietat
+        ORDER BY c.data_inici DESC
+    ";
 
-$collites = [];
-if ($result) {
-    while($row = $result->fetch_assoc()) {
-        $collites[] = [
-            'varietat' => $row['varietat'],
-            'total_kg' => floatval($row['total_kg'])
+    $sql = "
+        SELECT 
+            c.id_collita,
+            v.nom_varietat AS nom,
+            c.quantitat_recoltada AS kg,
+            DATE(c.data_inici) AS data_collita,
+            c.lot_id
+        FROM collites c
+        JOIN varietats v ON c.id_varietat = v.id_varietat
+        ORDER BY c.data_inici DESC
+    ";
+
+    $stmt = $pdo->query($sql);
+    $collites = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    echo json_encode(array_map(function($r) {
+        return [
+            'id_collita'   => intval($r['id_collita']),
+            'nom'          => $r['nom'],
+            'kg'           => floatval($r['kg']),
+            'data_collita' => $r['data_collita'],
+            'lot_id'       => $r['lot_id'],
         ];
-    }
-}
+    }, $collites));
 
-echo json_encode($collites);
+} catch (Throwable $e) {
+    echo json_encode(['error' => $e->getMessage()]);
+}
 ?>

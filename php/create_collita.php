@@ -1,42 +1,46 @@
 <?php
-require 'db_config.php';
-session_start();
-$user_id = $_SESSION['user_id'] ?? 1;
+require_once __DIR__ . '/config.php';
 header('Content-Type: application/json');
 
 $data = json_decode(file_get_contents('php://input'), true);
 
-// Receives: parcel_id, quantitat, date (optional, default today)
-if (isset($data['parcel_id']) && isset($data['quantitat'])) {
-    $parcel_id = intval($data['parcel_id']);
-    $quantitat = floatval($data['quantitat']);
-    $data_collita = isset($data['data']) ? $conn->real_escape_string($data['data']) : date('Y-m-d');
-
-    // Fetch variety from parceles table
-    $sql_var = "SELECT varietat FROM parceles WHERE id = $parcel_id";
-    $res_var = $conn->query($sql_var);
-    
-    if ($res_var && $res_var->num_rows > 0) {
-        $row_var = $res_var->fetch_assoc();
-        $varietat = $conn->real_escape_string($row_var['varietat']);
-
-        // Insert into collites
-        $obs = "Entrada Manual Inventari";
-        $sql_insert = "INSERT INTO collites (parcel_id, data, varietat, quantitat, observacions, created_at, user_id) 
-                       VALUES ($parcel_id, '$data_collita', '$varietat', $quantitat, '$obs', NOW(), $user_id)";
-        
-        if ($conn->query($sql_insert) === TRUE) {
-            echo json_encode(['success' => true, 'id' => $conn->insert_id]);
-        } else {
-            echo json_encode(['success' => false, 'error' => $conn->error]);
-        }
-    } else {
-        echo json_encode(['success' => false, 'error' => 'Parcel not found']);
-    }
-
-} else {
+// parcel_id here is id_plantacio (from get_parceles_simple.php)
+if (!isset($data['parcel_id']) || !isset($data['quantitat'])) {
     echo json_encode(['success' => false, 'error' => 'Missing parameters']);
+    exit;
 }
 
-$conn->close();
+try {
+    $pdo = db();
+    $id_plantacio = intval($data['parcel_id']);
+    $quantitat    = floatval($data['quantitat']);
+    $data_inici   = !empty($data['data']) ? $data['data'] . ' 00:00:00' : date('Y-m-d H:i:s');
+
+    // Get id_varietat from plantació
+    $stmt = $pdo->prepare("SELECT id_varietat FROM plantacions WHERE id_plantacio = ?");
+    $stmt->execute([$id_plantacio]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$row) {
+        echo json_encode(['success' => false, 'error' => 'Plantació no trobada']);
+        exit;
+    }
+
+    $id_varietat = $row['id_varietat'];
+
+    // Generate a simple lot_id
+    $lot_id = 'LOT-INV-' . date('YmdHis') . '-' . $id_plantacio;
+
+    // Insert into collites
+    $stmt2 = $pdo->prepare("
+        INSERT INTO collites (id_plantacio, data_inici, id_varietat, quantitat_recoltada, unitat, lot_id)
+        VALUES (?, ?, ?, ?, 'kg', ?)
+    ");
+    $stmt2->execute([$id_plantacio, $data_inici, $id_varietat, $quantitat, $lot_id]);
+
+    echo json_encode(['success' => true, 'id' => $pdo->lastInsertId(), 'lot_id' => $lot_id]);
+
+} catch (Throwable $e) {
+    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+}
 ?>
