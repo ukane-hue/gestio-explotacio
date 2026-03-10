@@ -86,6 +86,14 @@ async function handleForm(e, url, msgId, callback) {
 
   const formData = new FormData(e.target);
   const data = Object.fromEntries(formData.entries());
+  
+  // Custom logic to handle multiple selections for id_treballadors[]
+  if (e.target.id === 'formRegistre') {
+    const treballadors = formData.getAll('id_treballadors[]');
+    if (treballadors.length > 0) {
+      data['id_treballadors[]'] = treballadors;
+    }
+  }
 
   try {
     const res = await fetch(url, {
