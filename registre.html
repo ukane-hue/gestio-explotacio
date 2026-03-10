@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <title>Registre</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        body { display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f4f4f4; }
+        .login-box { background: white; padding: 2rem; border-radius: 8px; width: 350px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;}
+        button { width: 100%; padding: 10px; background: #007bff; color: white; border: none; cursor: pointer; border-radius: 4px;}
+    </style>
+</head>
+<body>
+    <div class="login-box">
+        <h2>Nou Usuari</h2>
+        <form id="formRegistre">
+            <input type="text" name="nom" placeholder="El teu nom" required>
+            <input type="email" name="email" placeholder="Correu electrònic" required>
+            <input type="password" name="password" placeholder="Contrasenya" required>
+            <button type="submit">Registrar-se</button>
+        </form>
+        <p><a href="login.html">Ja tinc compte</a></p>
+        <p id="msg" style="color:red;"></p>
+    </div>
+
+    <script>
+        document.getElementById('formRegistre').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const res = await fetch('php/auth_register.php', { method: 'POST', body: formData });
+            const data = await res.json();
+            
+            if (data.ok) {
+                alert('Usuari creat! Ara entra amb les teves dades.');
+                window.location.href = 'login.html';
+            } else {
+                document.getElementById('msg').innerText = data.missatge;
+            }
+        });
+    </script>
+</body>
+</html>

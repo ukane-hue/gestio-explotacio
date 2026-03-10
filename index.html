@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Gestió Explotació Agrícola</title>
+  <link rel="stylesheet" href="css/styles.css?v=5">
+  <script src="js/auth_guard.js"></script>
+</head>
+
+<body>
+  <header>
+    <h1>
+      <img src="img/logo.png" alt="Logo" class="logo">
+      Gestió Agrícola
+    </h1>
+    <nav>
+      <a href="index.html" class="active">Inici</a>
+      <a href="parceles.html">Nova Parcel·la</a>
+      <a href="gestio_parceles.html">Gestió Parcel·les</a>
+      <a href="tractaments.html">Tractaments</a>
+      <a href="collites.html">Collites</a>
+      <a href="maquinaria.html">Maquinària</a>
+      <a href="personal.html">Personal</a>
+      <a href="inventari.html">Inventari</a>
+      <a href="observacions.html">Observacions</a>
+      <a href="php/logout.php">Tancar Sessió</a>
+    </nav>
+  </header>
+
+  <main class="container">
+
+    <!-- Títol Principal -->
+    <div class="home-title-section">
+      <h2>Benvinguts a la Gestió Integral</h2>
+      <p>Optimitzant el camp amb tecnologia, tradició i eficiència.</p>
+    </div>
+
+    <!-- Imatge Petita -->
+    <div class="home-img-wrapper">
+      <img src="https://images.unsplash.com/photo-1500651230702-0e2d8a49d4ad?auto=format&fit=crop&w=900&q=80"
+        alt="Explotació Agrícola" class="home-banner-img" onerror="this.style.display='none'">
+    </div>
+
+    <!-- Qui Som -->
+    <div class="card" style="text-align: center; max-width: 800px; margin: 0 auto 2.5rem auto;">
+      <h3>Qui Som?</h3>
+      <p style="font-size: 1.1rem; color: #555;">
+        Som una explotació agrícola compromesa amb la qualitat i la sostenibilitat.
+        Utilitzem les últimes tecnologies per garantir la traçabilitat dels nostres productes,
+        des de la terra fins a la taula, cuidant cada detall del procés productiu.
+      </p>
+    </div>
+
+    <!-- Features Grid -->
+    <h3
+      style="margin-bottom: 20px; color: var(--primary-dark); border-left: 5px solid var(--accent-color); padding-left: 15px;">
+      Panell de Gestió</h3>
+
+    <div class="features-grid">
+      <a href="parceles.html" class="feature-card">
+        <span class="feature-icon">🌱</span>
+        <h3>Nova Parcel·la</h3>
+        <p>Registra noves parcel·les i defineix la seva geometria.</p>
+      </a>
+
+      <a href="gestio_parceles.html" class="feature-card">
+        <span class="feature-icon">🗺️</span>
+        <h3>Gestió Parcel·les</h3>
+        <p>Visualitza, edita i gestiona les teves terres.</p>
+      </a>
+
+      <a href="tractaments.html" class="feature-card">
+        <span class="feature-icon">🚜</span>
+        <h3>Tractaments</h3>
+        <p>Control de fitosanitaris i fertilitzants aplicats.</p>
+      </a>
+
+      <a href="collites.html" class="feature-card">
+        <span class="feature-icon">🍎</span>
+        <h3>Collites</h3>
+        <p>Registre de producció, lots i traçabilitat.</p>
+      </a>
+
+      <a href="personal.html" class="feature-card">
+        <span class="feature-icon">👥</span>
+        <h3>Personal</h3>
+        <p>Gestió de treballadors, usuaris i tasques.</p>
+      </a>
+
+      <a href="maquinaria.html" class="feature-card">
+        <span class="feature-icon">⚙️</span>
+        <h3>Maquinària</h3>
+        <p>Inventari i manteniment de la flota.</p>
+      </a>
+    </div>
+
+    <!-- Els Nostres Productes -->
+    <h3
+      style="margin: 3rem 0 1.5rem; color: var(--primary-dark); border-left: 5px solid var(--accent-color); padding-left: 15px;">
+      Els Nostres Productes</h3>
+
+    <div class="fruit-list">
+
+      <div class="fruit-item">
+        <img src="https://images.unsplash.com/photo-1560806887-1e4cd0b6bcd6?auto=format&fit=crop&w=120&q=80" alt="Poma"
+          class="fruit-thumb"
+          onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2280%22 height=%2280%22><text y=%2260%22 font-size=%2260%22>🍎</text></svg>'">
+        <div class="fruit-text">
+          <h4>Poma</h4>
+          <p>Varietats dolces i cruixents cultivades amb cura. Ideals per al consum fresc i per a la indústria
+            agroalimentària.</p>
+        </div>
+      </div>
+
+      <div class="fruit-item">
+        <img src="https://images.unsplash.com/photo-1595743825637-cdafc8ad4173?auto=format&fit=crop&w=120&q=80"
+          alt="Préssec" class="fruit-thumb"
+          onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2280%22 height=%2280%22><text y=%2260%22 font-size=%2260%22>🍑</text></svg>'">
+        <div class="fruit-text">
+          <h4>Préssec</h4>
+          <p>Fruita de pinyol sucosa i aromàtica. Collida en el punt òptim de maduresa per garantir el millor sabor.</p>
+        </div>
+      </div>
+
+      <div class="fruit-item">
+        <img src="https://images.unsplash.com/photo-1514756331096-242f3900f951?auto=format&fit=crop&w=120&q=80"
+          alt="Pera" class="fruit-thumb"
+          onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2280%22 height=%2280%22><text y=%2260%22 font-size=%2260%22>🍐</text></svg>'">
+        <div class="fruit-text">
+          <h4>Pera</h4>
+          <p>Textura fina i gust exquisit. Cultivada en les nostres terres i controlada amb els màxims estàndards de
+            qualitat.</p>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <footer>
+    <p>&copy; 2026 Gestió Agrícola - Optimitzant el futur del camp</p>
+  </footer>
+</body>
+
+</html>

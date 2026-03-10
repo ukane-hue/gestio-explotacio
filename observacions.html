@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Observacions Fitosanitàries</title>
+    <link rel="stylesheet" href="css/styles.css?v=4">
+    <script src="js/auth_guard.js"></script>
+    <script src="js/observacions.js" defer></script>
+</head>
+
+<body>
+    <header>
+        <h1>
+            <img src="img/logo.png" alt="Logo" class="logo">
+            Observacions Fitosanitàries
+        </h1>
+        <nav>
+      <a href="index.html">Inici</a>
+      <a href="parceles.html">Nova Parcel·la</a>
+      <a href="gestio_parceles.html">Gestió Parcel·les</a>
+      <a href="tractaments.html">Tractaments</a>
+      <a href="collites.html">Collites</a>
+      <a href="maquinaria.html">Maquinària</a>
+      <a href="personal.html">Personal</a>
+      <a href="inventari.html">Inventari</a>
+      <a href="observacions.html" class="active">Observacions</a>
+      <a href="php/logout.php">Tancar Sessió</a>
+        </nav>
+    </header>
+
+    <main class="container">
+        <div class="card">
+            <h3>Registrar Nova Observació</h3>
+            <form id="formObservacio">
+                <label>Plantació (Parcel·la - Varietat):</label>
+                <select name="id_plantacio" id="selPlantacio" required>
+                    <option value="">Carregant...</option>
+                </select>
+
+                <div class="row">
+                    <div>
+                        <label>Data:</label>
+                        <input type="date" name="data_observacio" id="dataObservacio" required>
+                    </div>
+                    <div>
+                        <label>Nivell d'Incidència:</label>
+                        <select name="nivell">
+                            <option value="baix">Baix</option>
+                            <option value="mitja">Mitjà</option>
+                            <option value="alt">Alt</option>
+                        </select>
+                    </div>
+                </div>
+
+                <label>Plaga o Malaltia Detectada:</label>
+                <input type="text" name="plaga" required placeholder="Ex: Pugó, Míldiu...">
+
+                <!-- Camps ocults per geolocalització -->
+                <input type="hidden" name="lat" id="lat">
+                <input type="hidden" name="lng" id="lng">
+                <button type="button" onclick="obtenirUbicacio()" style="background:#607d8b; margin-bottom:15px;">📍
+                    Obtenir Ubicació Actual</button>
+                <span id="geoStatus" style="font-size:0.9em; color:#666;"></span>
+
+                <button type="submit">Registrar Observació</button>
+                <p id="msgObservacio"></p>
+            </form>
+        </div>
+
+        <div class="card" style="margin-top: 20px;">
+            <h3>Històric d'Observacions</h3>
+            <table id="taulaObservacions" class="styled-table">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Parcel·la</th>
+                        <th>Plaga/Malaltia</th>
+                        <th>Nivell</th>
+                        <th>Ubicació</th>
+                        <th>Accions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </main>
+</body>
+
+</html>
