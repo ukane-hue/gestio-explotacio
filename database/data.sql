@@ -1,132 +1,63 @@
--- Gestió Explotació — Esquema complet MySQL
--- Executa aquest script amb un usuari que tingui permisos de creació.
+-- Dades de prova per a gestio_explotacio
+-- NOTA IMPORTANT: No inclou l'usuari admin!
+-- Has de crear l'admin executant el fitxer 'php/create_admin.php' en el terminal o desastant-lo per web.
 
+USE gestio_explotacio;
 
-CREATE DATABASE gestio_explotacio1 CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-USE gestio_explotacio1;
+-- 1. Espècies
+INSERT INTO especies (nom_cientific, nom_comu) VALUES
+('Prunus avium', 'Cirerer'),
+('Prunus persica', 'Presseguer'),
+('Pyrus communis', 'Perera'),
+('Malus domestica', 'Pomera');
 
--- Taula de parcel·les
-CREATE TABLE parceles (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  nom VARCHAR(120) NOT NULL,
-  superficie DECIMAL(10,2) NOT NULL,
-  cultiu ENUM('cirerer','presseguer','perera','pomera') NOT NULL,
-  varietat VARCHAR(120) DEFAULT NULL,
-  geojson JSON NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB;
+-- 2. Varietats
+INSERT INTO varietats (id_especie, nom_varietat, necessitats_hidriques, hores_fred, productivitat_esperada) VALUES
+(1, 'Burlat', 600.00, 400, 15000.00),
+(1, 'Lapins', 650.00, 500, 18000.00),
+(2, 'Roig d''Albesa', 700.00, 600, 25000.00),
+(3, 'Conference', 800.00, 800, 30000.00),
+(4, 'Fuji', 750.00, 900, 40000.00);
 
--- 3. Taula de PERSONAL
--- Necessària per assignar responsables i controlar el carnet fitosanitari (PDF 05)
-CREATE TABLE IF NOT EXISTS personal (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nom VARCHAR(100) NOT NULL,
-    nif VARCHAR(20),
-    carrec VARCHAR(50),
-    te_carnet_fitosanitari BOOLEAN DEFAULT 0,
-    actiu BOOLEAN DEFAULT 1
-    
-);
+-- 3. Parcel·les (Assignades a l'usuari admin per defecte, id_propietari = 1)
+INSERT INTO parceles (nom_parcela, superficie, tipus_sol, ph, materia_organica, id_propietari) VALUES
+('Finca Vella', 2.50, 'Franco-argilós', 7.20, 2.50, 1),
+('Camp Nou', 1.85, 'Sorrenc', 6.80, 1.80, 1),
+('Hort del Riu', 3.20, 'Llimós', 7.50, 3.10, 1);
 
--- Taula de collites (harvests)
-CREATE TABLE collites (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  parcel_id INT NULL,
-  data DATE NOT NULL,
-  varietat VARCHAR(120) NOT NULL,
-  quantitat DECIMAL(10,2) DEFAULT NULL,
-  equip VARCHAR(200) DEFAULT NULL,
-  observacions TEXT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  CONSTRAINT fk_collites_parcela FOREIGN KEY (parcel_id)
-    REFERENCES parceles(id) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB;
+-- 4. Productes
+INSERT INTO productes (nom_comercial, materia_activa, tipus, concentracio, unitat_stock, stock_actual, preu_unitari) VALUES
+('Cobre Azul', 'Oxiclorur de coure', 'fitosanitari', '50%', 'kg', 25.00, 12.50),
+('Abonament NPK', 'Nitrogen-Fòsfor-Potassi', 'fertilitzant', '15-15-15', 'kg', 500.00, 2.10),
+('Bacillus T', 'Bacillus thuringiensis', 'biologic', '32000 UI/mg', 'kg', 10.00, 35.00);
 
--- Taula de tractaments (treatments)
-CREATE TABLE tractaments (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  parcel_id INT NULL,
-  data DATE NOT NULL,
-  producte VARCHAR(200) NOT NULL,
-  quantitat DECIMAL(10,2) DEFAULT NULL,
-  observacions TEXT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  CONSTRAINT fk_tractaments_parcela FOREIGN KEY (parcel_id)
-    REFERENCES parceles(id) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB;
+-- 5. Treballadors
+INSERT INTO treballadors (nom, cognom, dni, telefon, tipus_contracte, categoria, data_inici) VALUES
+('Joan', 'Garcia', '12345678A', '600123456', 'Fixe', 'Encarregat', '2023-01-15'),
+('Maria', 'López', '87654321B', '600654321', 'Temporal', 'Peó', '2025-03-01'),
+('Pere', 'Martínez', '45678912C', '600111222', 'Temporal', 'Tractorista', '2024-05-10');
 
--- Índexos útils
-CREATE INDEX idx_parceles_nom ON parceles(nom);
-CREATE INDEX idx_collites_data ON collites(data);
-CREATE INDEX idx_tractaments_data ON tractaments(data);
+-- 6. Maquinària
+INSERT INTO maquinaria (nom, tipus, matricula, data_compra, estat) VALUES
+('Tractor John Deere', 'Tractor', 'E1234BBD', '2020-05-20', 'actiu'),
+('Atomitzador 2000L', 'Atomitzador', 'E5678CCC', '2021-03-15', 'actiu'),
+('Tractor New Holland', 'Tractor', 'E9999XYZ', '2019-11-10', 'reparacio');
 
--- Dades de prova mínimes
-INSERT INTO parceles (nom, superficie, cultiu, varietat) VALUES
-('Parcela A', 1.20, 'pomera',  'Fuji'),
-('Parcela B', 0.85, 'perera',  'Conference'),
-('Parcela C', 2.10, 'cirerer', 'Burlat');
+-- 7. Tasques
+INSERT INTO tasques (nom_tasca, descripcio) VALUES
+('Poda', 'Poda d''hivern dels arbres fruiters'),
+('Tractament foliar', 'Aplicació de fitosanitaris amb atomitzador'),
+('Collita', 'Recollida manual de la fruita'),
+('Abonat fons', 'Aplicació d''adob granular al sòl');
 
-INSERT INTO collites (parcel_id, data, varietat, quantitat, equip, observacions) VALUES
-(1, '2025-05-10', 'Fuji', 120.5, 'Equip 1', 'Sense incidències'),
-(2, '2025-05-11', 'Conference', 75.0, 'Equip 2', 'Molt bona qualitat');
+-- 8. Sectors (Opcional, dividint la Finca Vella)
+INSERT INTO sectors (id_parcela, nom_sector) VALUES
+(1, 'Sector Nord'),
+(1, 'Sector Sud'),
+(2, 'Sector Únic');
 
-INSERT INTO tractaments (parcel_id, data, producte, quantitat, observacions) VALUES
-(1, '2025-04-20', 'Fungicida X', 12.5, 'Aplicat després de pluja'),
-(3, '2025-04-25', 'Insecticida Y', 8.0, 'Plaga lleu a la vora');
-
-
-ALTER TABLE personal
-ADD COLUMN telefon VARCHAR(20) AFTER nif,
-ADD COLUMN email VARCHAR(100) AFTER telefon,
-ADD COLUMN nss VARCHAR(20) AFTER email, -- Número de la Seguretat Social
-ADD COLUMN tipus_contracte ENUM('indefinit', 'temporal', 'fix_discontinu', 'practiques', 'altres') DEFAULT 'temporal',
-ADD COLUMN durada_contracte VARCHAR(50); -- Ex: "6 mesos", "Fins final de campanya"
-
--- 1. Crear taula d'Usuaris
-CREATE TABLE usuaris (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    email VARCHAR(100) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL, -- Guardarem el hash, no la contrasenya plana
-    nom VARCHAR(100),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- 2. Afegir columna user_id a les taules existents
--- Això vincula cada dada a un usuari
-ALTER TABLE parceles ADD COLUMN user_id INT NOT NULL;
-ALTER TABLE tractaments ADD COLUMN user_id INT NOT NULL;
-ALTER TABLE collites ADD COLUMN user_id INT NOT NULL;
-ALTER TABLE personal ADD COLUMN user_id INT NOT NULL;
-
--- 3. Crear les relacions (Foreign Keys)
-ALTER TABLE parceles ADD CONSTRAINT fk_parceles_user FOREIGN KEY (user_id) REFERENCES usuaris(id) ON DELETE CASCADE;
-ALTER TABLE tractaments ADD CONSTRAINT fk_tractaments_user FOREIGN KEY (user_id) REFERENCES usuaris(id) ON DELETE CASCADE;
-ALTER TABLE collites ADD CONSTRAINT fk_collites_user FOREIGN KEY (user_id) REFERENCES usuaris(id) ON DELETE CASCADE;
-ALTER TABLE personal ADD CONSTRAINT fk_personal_user FOREIGN KEY (user_id) REFERENCES usuaris(id) ON DELETE CASCADE;
-
--- 1. CREAR LA TAULA D'USUARIS (Si no existeix)
-CREATE TABLE IF NOT EXISTS usuaris (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nom VARCHAR(100) NOT NULL,
-    email VARCHAR(100) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-
--- 3. VINCULAR LES DADES ALS USUARIS (Afegir user_id)
--- Afegeix la columna user_id a 'personal'
-ALTER TABLE personal ADD COLUMN user_id INT NOT NULL;
-ALTER TABLE personal ADD CONSTRAINT fk_personal_user FOREIGN KEY (user_id) REFERENCES usuaris(id) ON DELETE CASCADE;
-
--- Afegeix la columna user_id a 'parceles'
-ALTER TABLE parceles ADD COLUMN user_id INT NOT NULL;
-ALTER TABLE parceles ADD CONSTRAINT fk_parceles_user FOREIGN KEY (user_id) REFERENCES usuaris(id) ON DELETE CASCADE;
-
--- Afegeix la columna user_id a 'tractaments'
-ALTER TABLE tractaments ADD COLUMN user_id INT NOT NULL;
-ALTER TABLE tractaments ADD CONSTRAINT fk_tractaments_user FOREIGN KEY (user_id) REFERENCES usuaris(id) ON DELETE CASCADE;
-
--- Afegeix la columna user_id a 'collites'
-ALTER TABLE collites ADD COLUMN user_id INT NOT NULL;
-ALTER TABLE collites ADD CONSTRAINT fk_collites_user FOREIGN KEY (user_id) REFERENCES usuaris(id) ON DELETE CASCADE;
+-- 9. Plantacions (Unint parcel·les i varietats)
+INSERT INTO plantacions (id_parcela, id_sector, id_varietat, data_plantacio, marc_plantacio, nombre_arbres, sistema_formacio) VALUES
+(1, 1, 1, '2015-02-15', '4x3', 800, 'vas'),
+(1, 2, 2, '2016-01-20', '4x3', 750, 'vas'),
+(2, 3, 4, '2018-03-10', '3.5x1.5', 1500, 'eix_central');
